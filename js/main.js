@@ -50,6 +50,19 @@ function nbUserInitials(user) {
   return 'U';
 }
 
+function nbDisplayName(user) {
+  const rawName = String(user?.name || '').trim();
+  if (rawName && rawName.toLowerCase() !== 'user') return rawName;
+  const email = String(user?.email || '').trim();
+  if (email) {
+    const localPart = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+    if (localPart) {
+      return localPart.replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+  }
+  return 'User';
+}
+
 function nbApplyAvatar(el, user) {
   if (!el) return;
   const photo = user?.photo || user?.photoUrl || user?.avatar || '';
@@ -74,7 +87,7 @@ function updateTopbarUser() {
 
   nbApplyAvatar(sidebarAvatar, u);
   nbApplyAvatar(topbarAvatar, u);
-  if(sidebarName) sidebarName.textContent = u.name;
+  if(sidebarName) sidebarName.textContent = nbDisplayName(u);
   if(sidebarRole) sidebarRole.textContent = u.role.charAt(0).toUpperCase()+u.role.slice(1);
   updateNotifDot();
 }
@@ -223,6 +236,7 @@ function showNotifications() {
 function renderDashboard(el) {
   const user = STATE.user;
   if (!user) { location.href = 'app.html'; return; }
+  const displayName = nbDisplayName(user);
   const accounts = DB.accounts.getByUser(user.id);
   const myAccIds = accounts.map(a=>a.id);
   const txns = DB.transactions.getByUser(user.id).slice(0,12);
@@ -287,7 +301,7 @@ function renderDashboard(el) {
           <div class="dash-title-row mb-4">
             <div>
               <div class="dash-title" style="font-size:1.5rem;">Financial Overview</div>
-              <div class="dash-sub">Welcome back, ${user.name.split(' ')[0]}</div>
+              <div class="dash-sub">Welcome back, ${displayName.split(' ')[0]}</div>
             </div>
             <div class="d-flex align-items-center gap-2" style="flex-wrap:wrap;justify-content:flex-end;">
               <div class="search-wrap dash-search">
@@ -369,6 +383,21 @@ function renderDashboard(el) {
                 <div class="t1" style="font-size:1.2rem;">Wealth Management</div>
                 <div class="t2">Free consultation with our advisors</div>
               </div>
+            </div>
+          </div>
+
+          <div class="dash-mini mt-4" style="border-radius:24px;padding:1.5rem;">
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+              <div>
+                <h6 style="font-size:1.05rem;margin-bottom:.35rem;">Transfer Security Code</h6>
+                <div style="font-size:.82rem;color:var(--nb-muted);">Create or update the private code used to confirm transfers.</div>
+              </div>
+              <span class="badge-status ${user.transferVerificationCode ? 'badge-active' : 'badge-pending'}">${user.transferVerificationCode ? 'Active' : 'Create now'}</span>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <input class="nb-input" id="dashboard-transfer-code" type="password" placeholder="${user.transferVerificationCode ? 'Enter a new transfer code' : 'Create your transfer code'}" style="flex:1;min-width:220px;">
+              <button class="btn-nb btn-nb-outline" onclick="togglePwInput('dashboard-transfer-code', this)" title="Show/Hide"><i class="bi bi-eye"></i></button>
+              <button class="btn-nb btn-nb-primary" onclick="saveTransferCodeFromDashboard()"><i class="bi bi-shield-lock"></i> Save Code</button>
             </div>
           </div>
         </div>
@@ -683,6 +712,11 @@ function saveTransferCodeFromInput(inputId) {
 function saveTransferCodeFromTransfers() {
   const ok = saveTransferCodeFromInput('t-transfer-code');
   if (ok && STATE.page === 'transfers') navigate('transfers');
+}
+
+function saveTransferCodeFromDashboard() {
+  const ok = saveTransferCodeFromInput('dashboard-transfer-code');
+  if (ok && STATE.page === 'dashboard') navigate('dashboard');
 }
 
 function buildTransferDraft(fromId) {
@@ -1230,6 +1264,7 @@ function toggleCardSecrets(id) {
 
 function renderProfile(el) {
   const u = STATE.user;
+  const displayName = nbDisplayName(u);
   const emailVerified = !!(window.NB_FIREBASE?.auth?.currentUser?.emailVerified);
   const initials = nbUserInitials(u);
   const photo = u?.photo || u?.photoUrl || '';
@@ -1241,7 +1276,7 @@ function renderProfile(el) {
       <div class="col-12 col-lg-4">
         <div class="nb-card text-center">
           <div id="profile-avatar" style="width:80px;height:80px;border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fff;${avatarStyle}">${photo ? '' : initials}</div>
-          <h5 class="fw-semibold mb-1">${u.name}</h5>
+          <h5 class="fw-semibold mb-1">${displayName}</h5>
           <div style="color:var(--nb-muted);font-size:.85rem;">${u.email}</div>
           <div class="mt-2"><span class="chip"><i class="bi bi-shield-check"></i> ${u.role}</span></div>
           <div class="mt-3">
@@ -1273,7 +1308,7 @@ function renderProfile(el) {
         <div class="nb-card mb-3">
           <h6 class="fw-semibold mb-3">Personal Information</h6>
           <div class="row g-3">
-            <div class="col-md-6 form-group"><label>Full Name</label><input class="nb-input" id="p-name" value="${u.name}"></div>
+            <div class="col-md-6 form-group"><label>Full Name</label><input class="nb-input" id="p-name" value="${displayName}"></div>
             <div class="col-md-6 form-group"><label>Email</label><input class="nb-input" id="p-email" value="${u.email}" type="email"></div>
             <div class="col-md-6 form-group"><label>Phone</label><input class="nb-input" id="p-phone" value="${u.phone||''}"></div>
             <div class="col-md-6 form-group"><label>Date of Birth</label><input class="nb-input" id="p-dob" value="${u.dob||''}" type="date"></div>

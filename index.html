@@ -391,6 +391,36 @@
       z-index: 1100;
     }
     .scrolled .mobile-nav-toggle { color: var(--nb-text); }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1101;
+    }
+    .header-theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.24);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      backdrop-filter: blur(12px);
+      transition: 0.3s;
+    }
+    .header-theme-toggle:hover {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+    }
+    .scrolled .header-theme-toggle {
+      border-color: var(--nb-border);
+      background: var(--nb-card);
+      color: var(--nb-text);
+    }
     .mobile-nav-backdrop {
       display: none;
       position: fixed;
@@ -402,7 +432,16 @@
     
     @media (max-width: 991px) {
       body.mobile-nav-open { overflow: hidden; }
+      .main-header .container { gap: 12px; }
+      .brand-text { font-size: 1.15rem !important; }
       .mobile-nav-toggle { display: block; }
+      .header-actions { gap: 8px; }
+      .header-theme-toggle {
+        width: 42px;
+        height: 42px;
+        display: inline-flex !important;
+        box-shadow: 0 10px 25px rgba(2, 6, 23, 0.2);
+      }
       .main-nav {
         position: fixed;
         top: 0;
@@ -427,18 +466,62 @@
     /* Stats Slideshow */
     .stats-slideshow-wrap {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: 500px;
+      grid-template-columns: minmax(320px, 0.95fr) minmax(320px, 1.05fr);
+      min-height: 560px;
       overflow: hidden;
+      background: #020617;
     }
     .stats-image-side {
-      background-image: url('https://images.unsplash.com/photo-1579621970795-87faff2f9050?auto=format&fit=crop&q=80&w=1200');
+      position: relative;
+      background-image:
+        linear-gradient(180deg, rgba(2, 6, 23, 0.18), rgba(2, 6, 23, 0.88)),
+        url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1400');
       background-size: cover;
       background-position: center;
+      display: flex;
+      align-items: flex-end;
+      padding: 44px;
+    }
+    .stats-image-side::after {
+      content: '';
+      position: absolute;
+      inset: 24px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 32px;
+      pointer-events: none;
+    }
+    .stats-image-panel {
+      position: relative;
+      z-index: 2;
+      max-width: 340px;
+      background: rgba(2, 6, 23, 0.72);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+    }
+    .stats-image-panel .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 14px;
+    }
+    .stats-image-panel h3 {
+      color: #fff;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    .stats-image-panel p {
+      color: rgba(255,255,255,0.72);
+      margin: 0;
     }
     .stats-content-side {
       background: #020617;
-      padding: 80px;
+      padding: 56px 72px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -446,27 +529,159 @@
     }
     .stat-slide {
       position: absolute;
-      left: 80px;
-      right: 80px;
+      left: 72px;
+      right: 72px;
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(22px) scale(0.96);
       transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
     .stat-slide.active {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
       pointer-events: auto;
     }
-    .stat-slide .val { font-size: 82px; font-weight: 800; color: var(--nb-accent); margin-bottom: 10px; font-family: var(--font-heading); }
-    .stat-slide .label { font-size: 16px; text-transform: uppercase; letter-spacing: 4px; color: rgba(255,255,255,0.4); font-weight: 700; }
+    .stat-slide-card {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.9));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 34px;
+      padding: 34px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.24);
+    }
+    .stat-slide-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .stat-slide-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--nb-accent);
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .stat-slide-copy {
+      flex: 1;
+    }
+    .stat-slide .label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.45);
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .stat-slide .val {
+      font-size: 74px;
+      line-height: 0.96;
+      font-weight: 800;
+      color: var(--nb-accent);
+      margin-bottom: 12px;
+      font-family: var(--font-heading);
+    }
+    .stat-slide-desc {
+      font-size: 16px;
+      color: rgba(255,255,255,0.72);
+      margin: 0 0 22px;
+      max-width: 470px;
+    }
+    .stat-slide-features {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .stat-slide-feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.82);
+      font-size: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat-slide-feature i {
+      color: var(--nb-accent);
+    }
+    .stat-slide-indicators {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      bottom: 56px;
+      display: flex;
+      gap: 12px;
+      z-index: 3;
+    }
+    .stat-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.18);
+      transition: 0.3s;
+    }
+    .stat-dot.active {
+      width: 42px;
+      border-radius: 999px;
+      background: var(--nb-accent);
+    }
+    .session-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.24);
+      color: #d1fae5;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 22px;
+      display: none;
+    }
+    .session-chip.active {
+      display: inline-flex;
+    }
 
     @media (max-width: 991px) {
       .stats-slideshow-wrap { grid-template-columns: 1fr; }
-      .stats-image-side { height: 300px; }
-      .stats-content-side { padding: 60px 30px; min-height: 400px; }
-      .stat-slide { left: 30px; right: 30px; }
-      .stat-slide .val { font-size: 60px; }
+      .stats-image-side {
+        min-height: 340px;
+        padding: 24px;
+      }
+      .stats-image-side::after {
+        inset: 16px;
+      }
+      .stats-content-side {
+        padding: 36px 22px 70px;
+        min-height: 480px;
+      }
+      .stat-slide {
+        left: 22px;
+        right: 22px;
+      }
+      .stat-slide-card {
+        padding: 24px;
+      }
+      .stat-slide-top {
+        flex-direction: column;
+      }
+      .stat-slide .val { font-size: 54px; }
+      .stat-slide-features { grid-template-columns: 1fr; }
+      .stat-slide-indicators {
+        left: 22px;
+        right: 22px;
+        bottom: 28px;
+      }
     }
 
     /* Better Detail Animation */
@@ -557,41 +772,41 @@
           <a href="#about" class="nav-link-custom" onclick="toggleMobileNav(false)">About</a>
         </div>
         <div class="nav-item-wrapper">
-          <a href="#" class="nav-link-custom">Personal</a>
+          <a href="#solutions" class="nav-link-custom" onclick="toggleMobileNav(false)">Solutions</a>
           <div class="nav-preview">
             <div class="d-flex align-items-center gap-2 mb-3">
               <i class="bi bi-person-check text-success fs-5"></i>
-              <h6 class="mb-0 fw-bold">Personal Banking</h6>
+              <h6 class="mb-0 fw-bold">Everyday Banking</h6>
             </div>
-            <p class="mb-3">Tailored accounts, flexible savings, and intuitive wealth management for your daily life.</p>
+            <p class="mb-3">Smart everyday banking, savings growth, and digital money management for modern customers.</p>
             <div class="nav-preview-item">
               <div class="nav-preview-icon"><i class="bi bi-wallet2"></i></div>
               <div>
-                <div class="fw-bold small">Checking & Savings</div>
-                <div class="text-muted" style="font-size: 11px;">High-yield interest accounts</div>
+                <div class="fw-bold small">Savings and Payments</div>
+                <div class="text-muted" style="font-size: 11px;">Designed for daily banking</div>
               </div>
             </div>
           </div>
         </div>
         <div class="nav-item-wrapper">
-          <a href="#" class="nav-link-custom">Business</a>
+          <a href="#accounts" class="nav-link-custom" onclick="toggleMobileNav(false)">Accounts</a>
           <div class="nav-preview">
             <div class="d-flex align-items-center gap-2 mb-3">
               <i class="bi bi-briefcase text-success fs-5"></i>
-              <h6 class="mb-0 fw-bold">Business Solutions</h6>
+              <h6 class="mb-0 fw-bold">Account Options</h6>
             </div>
-            <p class="mb-3">Empowering enterprises with smart credit lines, payroll tools, and global trade finance.</p>
+            <p class="mb-3">Compare premium account types built for savings, liquidity, business growth, and private banking.</p>
             <div class="nav-preview-item">
               <div class="nav-preview-icon"><i class="bi bi-graph-up-arrow"></i></div>
               <div>
-                <div class="fw-bold small">Corporate Credit</div>
-                <div class="text-muted" style="font-size: 11px;">Lines up to $2M USD</div>
+                <div class="fw-bold small">Flexible Structures</div>
+                <div class="text-muted" style="font-size: 11px;">Find the right fit faster</div>
               </div>
             </div>
           </div>
         </div>
         <div class="nav-item-wrapper">
-          <a href="#" class="nav-link-custom">Cards</a>
+          <a href="#cards" class="nav-link-custom" onclick="toggleMobileNav(false)">Cards</a>
           <div class="nav-preview">
             <div class="d-flex align-items-center gap-2 mb-3">
               <i class="bi bi-credit-card-2-front text-success fs-5"></i>
@@ -608,31 +823,36 @@
           </div>
         </div>
         <div class="nav-item-wrapper">
-          <a href="#" class="nav-link-custom">Private</a>
+          <a href="#testimonials" class="nav-link-custom" onclick="toggleMobileNav(false)">Clients</a>
           <div class="nav-preview">
             <div class="d-flex align-items-center gap-2 mb-3">
               <i class="bi bi-gem text-success fs-5"></i>
-              <h6 class="mb-0 fw-bold">Private Wealth</h6>
+              <h6 class="mb-0 fw-bold">Client Experience</h6>
             </div>
-            <p class="mb-3">Bespoke advisory and elite financial services for high-net-worth individuals.</p>
+            <p class="mb-3">See how customers use Credit Financials for secure wealth management and everyday banking.</p>
             <div class="nav-preview-item">
               <div class="nav-preview-icon"><i class="bi bi-shield-lock"></i></div>
               <div>
-                <div class="fw-bold small">Asset Protection</div>
-                <div class="text-muted" style="font-size: 11px;">Secure offshore vaults</div>
+                <div class="fw-bold small">Trusted Worldwide</div>
+                <div class="text-muted" style="font-size: 11px;">Professional service and support</div>
               </div>
             </div>
           </div>
         </div>
-        <button class="btn border-0 p-2 me-2" onclick="toggleTheme()" id="theme-toggle">
-          <i class="bi bi-moon-stars-fill text-white fs-5" id="theme-icon"></i>
-        </button>
-        <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;" onclick="toggleMobileNav(false)">Online Portal</a>
+        <div class="nav-item-wrapper">
+          <a href="#contact" class="nav-link-custom" onclick="toggleMobileNav(false)">Contact Us</a>
+        </div>
+        <a href="app.html?view=login" class="btn-outline-white py-2 px-4" style="font-size: 13px;" id="header-login-cta" onclick="toggleMobileNav(false)">Login</a>
+        <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;" id="header-portal-cta" onclick="toggleMobileNav(false)">Online Portal</a>
       </nav>
-      
-      <button class="mobile-nav-toggle" onclick="toggleMobileNav()">
-        <i class="bi bi-list"></i>
-      </button>
+      <div class="header-actions">
+        <button class="header-theme-toggle" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle theme">
+          <i class="bi bi-moon-stars-fill fs-5" id="theme-icon"></i>
+        </button>
+        <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Open navigation">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
     </div>
   </header>
   <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" onclick="toggleMobileNav(false)"></div>
@@ -644,11 +864,13 @@
       <div class="row">
         <div class="col-lg-8">
           <span class="badge-premium animate__animated animate__fadeInDown">Global Excellence in Finance</span>
+          <div class="session-chip" id="session-chip"><i class="bi bi-shield-check"></i> Active session detected</div>
           <h1 class="display-1 text-white mb-4 animate__animated animate__fadeInUp">Banking Beyond <br><span style="color: #10b981;">Expectations.</span></h1>
           <p class="h5 text-white-50 mb-5 max-w-2xl animate__animated animate__fadeInUp" style="max-width: 600px;">Experience the fusion of elite private banking and cutting-edge digital technology. Secure, swift, and strictly professional.</p>
-          <div class="d-flex gap-4 animate__animated animate__fadeInUp">
+          <div class="d-flex gap-4 flex-wrap animate__animated animate__fadeInUp">
             <a href="app.html?view=register" class="btn-premium">Open Account <i class="bi bi-arrow-right"></i></a>
-            <a href="#cards" class="btn-outline-white">Compare Cards</a>
+            <a href="app.html?view=login" class="btn-outline-white" id="hero-login-cta">Login</a>
+            <a href="#cards" class="btn-outline-white">Explore Cards</a>
           </div>
         </div>
       </div>
@@ -674,23 +896,83 @@
 
   <!-- STATISTICS SECTION (Slideshow) -->
   <section class="stats-slideshow-wrap">
-    <div class="stats-image-side"></div>
+    <div class="stats-image-side">
+      <div class="stats-image-panel">
+        <div class="eyebrow"><i class="bi bi-graph-up-arrow"></i> Dynamic insights</div>
+        <h3>Banking momentum with a more premium presentation.</h3>
+        <p>Live metrics now combine image-led storytelling, cleaner transitions, and icon-supported highlights instead of the previous bare text-only motion.</p>
+      </div>
+    </div>
     <div class="stats-content-side">
       <div class="stat-slide active" data-index="0">
-        <div class="val">25+</div>
-        <div class="label">Years of Excellence</div>
+        <div class="stat-slide-card">
+          <div class="stat-slide-top">
+            <div class="stat-slide-icon"><i class="bi bi-award"></i></div>
+            <div class="stat-slide-copy">
+              <span class="label">Years of Excellence</span>
+              <div class="val">25+</div>
+            </div>
+          </div>
+          <p class="stat-slide-desc">A long-standing record of disciplined banking operations, trusted wealth support, and premium customer service across global markets.</p>
+          <div class="stat-slide-features">
+            <div class="stat-slide-feature"><i class="bi bi-shield-lock"></i> Security-first operations</div>
+            <div class="stat-slide-feature"><i class="bi bi-people"></i> Relationship-led service</div>
+          </div>
+        </div>
       </div>
       <div class="stat-slide" data-index="1">
-        <div class="val">$140B+</div>
-        <div class="label">Total Assets Managed</div>
+        <div class="stat-slide-card">
+          <div class="stat-slide-top">
+            <div class="stat-slide-icon"><i class="bi bi-bank2"></i></div>
+            <div class="stat-slide-copy">
+              <span class="label">Total Assets Managed</span>
+              <div class="val">$140B+</div>
+            </div>
+          </div>
+          <p class="stat-slide-desc">A global asset base supported by private banking discipline, real-time oversight, and scalable digital access for customers.</p>
+          <div class="stat-slide-features">
+            <div class="stat-slide-feature"><i class="bi bi-bar-chart-line"></i> Portfolio visibility</div>
+            <div class="stat-slide-feature"><i class="bi bi-globe2"></i> Cross-border reach</div>
+          </div>
+        </div>
       </div>
       <div class="stat-slide" data-index="2">
-        <div class="val">1200+</div>
-        <div class="label">Global Partners</div>
+        <div class="stat-slide-card">
+          <div class="stat-slide-top">
+            <div class="stat-slide-icon"><i class="bi bi-diagram-3"></i></div>
+            <div class="stat-slide-copy">
+              <span class="label">Global Partners</span>
+              <div class="val">1200+</div>
+            </div>
+          </div>
+          <p class="stat-slide-desc">Our ecosystem supports secure payments, wealth coordination, and business banking collaboration across leading global institutions.</p>
+          <div class="stat-slide-features">
+            <div class="stat-slide-feature"><i class="bi bi-link-45deg"></i> Connected infrastructure</div>
+            <div class="stat-slide-feature"><i class="bi bi-briefcase"></i> Enterprise ready</div>
+          </div>
+        </div>
       </div>
       <div class="stat-slide" data-index="3">
-        <div class="val">99.9%</div>
-        <div class="label">Uptime Reliability</div>
+        <div class="stat-slide-card">
+          <div class="stat-slide-top">
+            <div class="stat-slide-icon"><i class="bi bi-cpu"></i></div>
+            <div class="stat-slide-copy">
+              <span class="label">Uptime Reliability</span>
+              <div class="val">99.9%</div>
+            </div>
+          </div>
+          <p class="stat-slide-desc">Platform resilience and secure digital delivery keep customers connected to transfers, cards, and account activity with confidence.</p>
+          <div class="stat-slide-features">
+            <div class="stat-slide-feature"><i class="bi bi-lightning-charge"></i> Fast digital response</div>
+            <div class="stat-slide-feature"><i class="bi bi-clock-history"></i> Always-on availability</div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-slide-indicators">
+        <button class="stat-dot active" data-slide-dot="0" onclick="showStatSlide(0)" aria-label="Show slide 1"></button>
+        <button class="stat-dot" data-slide-dot="1" onclick="showStatSlide(1)" aria-label="Show slide 2"></button>
+        <button class="stat-dot" data-slide-dot="2" onclick="showStatSlide(2)" aria-label="Show slide 3"></button>
+        <button class="stat-dot" data-slide-dot="3" onclick="showStatSlide(3)" aria-label="Show slide 4"></button>
       </div>
     </div>
   </section>
@@ -739,7 +1021,7 @@
   </section>
 
   <!-- SERVICES GRID SECTION (Screenshot 1 & 2) -->
-  <section class="section-padding" style="background: var(--nb-card);">
+  <section id="solutions" class="section-padding" style="background: var(--nb-card);">
     <div class="container">
       <div class="row mb-5 align-items-end">
         <div class="col-lg-6">
@@ -796,7 +1078,7 @@
   </section>
 
   <!-- ACCOUNT SELECTOR SECTION (Screenshot 3) -->
-  <section class="section-padding" style="background: var(--nb-bg);">
+  <section id="accounts" class="section-padding" style="background: var(--nb-bg);">
     <div class="container">
       <div class="row mb-5">
         <div class="col-lg-6">
@@ -975,7 +1257,7 @@
   </section>
 
   <!-- TESTIMONIALS SECTION -->
-  <section class="section-padding">
+  <section id="testimonials" class="section-padding">
     <div class="container">
       <div class="text-center mb-5 pb-lg-4">
         <span class="badge-premium">Client Voices</span>
@@ -1025,7 +1307,7 @@
     </div>
   </section>
 
-  <footer class="section-padding bg-dark text-white">
+  <footer id="contact" class="section-padding bg-dark text-white">
     <div class="container">
       <div class="row g-5">
         <div class="col-lg-4">
@@ -1058,8 +1340,8 @@
         </div>
         <div class="col-lg-3">
           <h6 class="fw-bold mb-4">Inquiries</h6>
-          <p class="small opacity-50 mb-1">General: support@creditfinancials.com</p>
-          <p class="small opacity-50">Private: elite@creditfinancials.com</p>
+          <p class="small opacity-50 mb-1">General: support@creditfinancials.xyz</p>
+          <p class="small opacity-50">Private: support@creditfinancials.xyz</p>
         </div>
       </div>
       <hr class="my-5 opacity-10">
@@ -1136,6 +1418,53 @@
         }
       })();
 
+      const getSessionDestination = () => {
+        const uid = sessionStorage.getItem('nb_session');
+        if (!uid) return null;
+        const role = (sessionStorage.getItem('nb_session_role') || 'customer').toLowerCase();
+        return ['admin', 'superadmin', 'teller'].includes(role) ? 'admin.html' : 'app.html';
+      };
+
+      const syncPortalCtas = () => {
+        const destination = getSessionDestination();
+        const chip = document.getElementById('session-chip');
+        const loginCta = document.getElementById('header-login-cta');
+        const portalCta = document.getElementById('header-portal-cta');
+        const heroLoginCta = document.getElementById('hero-login-cta');
+
+        if (destination) {
+          if (chip) chip.classList.add('active');
+          if (loginCta) {
+            loginCta.href = destination;
+            loginCta.textContent = 'Back to Dashboard';
+          }
+          if (portalCta) {
+            portalCta.href = destination;
+            portalCta.textContent = 'Open Dashboard';
+          }
+          if (heroLoginCta) {
+            heroLoginCta.href = destination;
+            heroLoginCta.textContent = 'Back to Dashboard';
+          }
+          return;
+        }
+
+        if (chip) chip.classList.remove('active');
+        if (loginCta) {
+          loginCta.href = 'app.html?view=login';
+          loginCta.textContent = 'Login';
+        }
+        if (portalCta) {
+          portalCta.href = 'app.html';
+          portalCta.textContent = 'Online Portal';
+        }
+        if (heroLoginCta) {
+          heroLoginCta.href = 'app.html?view=login';
+          heroLoginCta.textContent = 'Login';
+        }
+      };
+      syncPortalCtas();
+
       // Background Parallax/Zoom
       const hero = document.querySelector('.hero-engine');
       window.addEventListener('scroll', () => {
@@ -1174,13 +1503,24 @@
       (function() {
         let currentSlide = 0;
         const slides = document.querySelectorAll('.stat-slide');
+        const dots = document.querySelectorAll('[data-slide-dot]');
         if (slides.length === 0) return;
 
-        setInterval(() => {
+        const showSlide = (index) => {
           slides[currentSlide].classList.remove('active');
-          currentSlide = (currentSlide + 1) % slides.length;
+          if (dots[currentSlide]) dots[currentSlide].classList.remove('active');
+          currentSlide = (index + slides.length) % slides.length;
           slides[currentSlide].classList.add('active');
-        }, 4000);
+          if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+        };
+
+        window.showStatSlide = (index) => {
+          showSlide(index);
+        };
+
+        setInterval(() => {
+          showSlide(currentSlide + 1);
+        }, 4500);
       })();
 
       // Account Selector Interactivity

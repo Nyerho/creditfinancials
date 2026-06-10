@@ -98,6 +98,9 @@ a { text-decoration: none; color: inherit; }
   transition: all .3s cubic-bezier(0.4, 0, 0.2, 1); 
   border-right: 1px solid rgba(255,255,255,0.03); 
 }
+.sidebar.closed {
+  transform: translateX(calc(-1 * var(--nb-sidebar-w)));
+}
 .sidebar-header { padding: 2.5rem 2rem; }
 .sidebar-logo { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
 .sidebar-logo span { color: var(--nb-accent); }
@@ -119,6 +122,9 @@ a { text-decoration: none; color: inherit; }
   justify-content: center;
   font-weight: 700;
   font-size: 1.1rem;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .sidebar nav { flex: 1; padding: 1rem 0; display: flex; flex-direction: column; }
 .nav-section { padding: 2rem 2rem 0.75rem; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; color: rgba(255,255,255,0.2); }
@@ -138,7 +144,8 @@ a { text-decoration: none; color: inherit; }
 .nav-item.active i { color: var(--nb-accent); }
 .nav-item i { font-size: 1.25rem; width: 24px; transition: color 0.2s; }
 
-.main-content { margin-left: var(--nb-sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; background: var(--nb-bg); }
+.main-content { margin-left: var(--nb-sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; background: var(--nb-bg); transition: margin-left .3s cubic-bezier(0.4, 0, 0.2, 1); }
+body.sidebar-collapsed .main-content { margin-left: 0; }
 .topbar { 
   background: var(--glass); 
   border-bottom: 1px solid var(--nb-border); 
@@ -353,3 +360,28 @@ select.nb-input option { background: var(--nb-card); }
 .txn-amt { font-weight: 800; font-size: .88rem; white-space: nowrap; }
 .txn-amt.pos { color: var(--nb-success); }
 .txn-amt.neg { color: var(--nb-danger); }
+
+@media (max-width: 991px) {
+  body.sidebar-open { overflow: hidden; }
+  .sidebar {
+    width: min(82vw, var(--nb-sidebar-w));
+    transform: translateX(-100%);
+    box-shadow: 18px 0 40px rgba(2, 6, 23, 0.28);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar.closed {
+    transform: translateX(-100%);
+  }
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+  .topbar {
+    padding: 1rem 1rem;
+  }
+  .page-content {
+    padding: 1rem;
+  }
+}

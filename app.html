@@ -58,7 +58,7 @@
           </svg>
           Credit<span>Financials</span>
         </a>
-        <button class="btn-nb btn-nb-outline btn-nb-sm d-lg-none" onclick="toggleSidebar(false)" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);"><i class="bi bi-x-lg"></i></button>
+        <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="toggleSidebar(false)" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="sidebar-user">
         <div class="d-flex align-items-center gap-3">
@@ -78,7 +78,7 @@
     <div class="main-content">
       <div class="topbar">
         <div class="d-flex align-items-center gap-3">
-          <button class="btn-nb btn-nb-outline d-lg-none" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+          <button class="btn-nb btn-nb-outline" onclick="toggleSidebar(true)"><i class="bi bi-list"></i></button>
           <div class="topbar-title" id="topbar-title">Overview</div>
         </div>
         <div class="topbar-actions">
@@ -167,7 +167,11 @@
             if (u) {
               STATE.user = u;
               sessionStorage.setItem('nb_session', u.id);
-              bootApp();
+              if (isAdmin()) {
+                location.href = 'admin.html';
+              } else {
+                bootApp();
+              }
               return;
             }
           } catch (_) {}

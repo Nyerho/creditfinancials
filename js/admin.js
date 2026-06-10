@@ -916,7 +916,7 @@ function renderAdminConfig(el) {
             <button class="btn-nb btn-nb-success btn-nb-sm">Enabled</button>
           </div>
           <div class="d-flex justify-content-between align-items-center py-2">
-            <div><div style="font-weight:500;">2FA Enforcement</div><div style="font-size:.78rem;color:var(--nb-muted);">Require OTP for all transfers</div></div>
+            <div><div style="font-weight:500;">Transfer Verification</div><div style="font-size:.78rem;color:var(--nb-muted);">Require each customer transfer code for protected transfers</div></div>
             <button class="btn-nb btn-nb-success btn-nb-sm">Enabled</button>
           </div>
         </div>

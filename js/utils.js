@@ -71,9 +71,25 @@ function toggleSidebar(force) {
   const s = document.getElementById('sidebar');
   const o = document.getElementById('sidebar-overlay');
   if (!s || !o) return;
-  const open = force !== undefined ? force : !s.classList.contains('open');
+
+  const isDesktop = window.innerWidth >= 992;
+  const currentlyOpen = isDesktop ? !s.classList.contains('closed') : s.classList.contains('open');
+  const open = force !== undefined ? !!force : !currentlyOpen;
+
+  if (isDesktop) {
+    s.classList.toggle('closed', !open);
+    s.classList.remove('open');
+    o.classList.remove('active');
+    document.body.classList.toggle('sidebar-collapsed', !open);
+    document.body.classList.remove('sidebar-open');
+    return;
+  }
+
+  s.classList.remove('closed');
+  document.body.classList.remove('sidebar-collapsed');
   s.classList.toggle('open', open);
   o.classList.toggle('active', open);
+  document.body.classList.toggle('sidebar-open', open);
 }
 
 function logAudit(action, entity, entityId, detail='') {

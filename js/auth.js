@@ -26,6 +26,18 @@ function togglePwInput(id, btn) {
   if (btn) btn.innerHTML = show ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
 }
 
+function authErrorMessage(err, fallback = 'Request failed') {
+  const code = err?.code || '';
+  if (code === 'auth/user-not-found') return 'No account exists for that email address.';
+  if (code === 'auth/invalid-email') return 'Enter a valid email address.';
+  if (code === 'auth/too-many-requests') return 'Too many requests. Please wait and try again.';
+  if (code === 'auth/network-request-failed') return 'Network error. Check your internet connection and try again.';
+  if (code === 'auth/missing-continue-uri' || code === 'auth/unauthorized-continue-uri' || code === 'auth/invalid-continue-uri') {
+    return 'Password reset is blocked by Firebase Auth URL settings. Add your site domain to Authorized Domains.';
+  }
+  return fallback;
+}
+
 function openForgotPasswordModal() {
   showModal('Reset Password', `
     <p style="font-size:.85rem;color:var(--nb-muted);margin-bottom:.75rem;">Enter your email address and we’ll send a password reset link.</p>
@@ -45,8 +57,8 @@ async function sendForgotPasswordLink() {
     await window.NB_FIREBASE.sendPasswordReset(email);
     toast('Password reset email sent.', 'success');
     closeModal();
-  } catch (_) {
-    toast('Unable to send reset email. Check Firebase Auth settings.', 'error');
+  } catch (err) {
+    toast(authErrorMessage(err, 'Unable to send reset email. Check Firebase Auth settings.'), 'error');
   }
 }
 
@@ -90,6 +102,7 @@ async function cloudGetOrCreateProfile(firebaseUser) {
   const uid = firebaseUser?.uid;
   if (!uid || !email) return null;
   if (!window.NB_FIREBASE?.getById || !window.NB_FIREBASE?.existsDoc || !window.NB_FIREBASE?.upsert) return null;
+  const localExisting = DB.users.getById(uid) || DB.users.getByEmail(email) || DB.users.getAll().find(u => normalizeEmail(u.email) === email) || null;
   const [isAdminUser, existingById] = await Promise.all([
     window.NB_FIREBASE.existsDoc('admins', uid),
     window.NB_FIREBASE.getById('users', uid)
@@ -99,16 +112,36 @@ async function cloudGetOrCreateProfile(firebaseUser) {
     try { existing = await window.NB_FIREBASE.findOneByField('users', 'email', email); } catch (_) {}
   }
   const role = isAdminUser ? (existing?.role || 'admin') : (existing?.role || 'customer');
-  const base = existing || {
+  const preferredName =
+    (existing?.name && existing.name !== 'User' ? existing.name : '') ||
+    (localExisting?.name && localExisting.name !== 'User' ? localExisting.name : '') ||
+    firebaseUser?.displayName ||
+    'User';
+  const base = existing || localExisting || {
     id: uid,
-    name: 'User',
+    name: preferredName,
     email,
     role,
     status: 'active',
     failedLogins: 0,
     joined: new Date().toISOString().slice(0, 10)
   };
-  const profile = { ...base, id: uid, email, role };
+  const profile = {
+    ...localExisting,
+    ...base,
+    id: uid,
+    email,
+    role,
+    name: preferredName,
+    phone: existing?.phone || localExisting?.phone || base.phone || '',
+    dob: existing?.dob || localExisting?.dob || base.dob || '',
+    address: existing?.address || localExisting?.address || base.address || '',
+    city: existing?.city || localExisting?.city || base.city || '',
+    state: existing?.state || localExisting?.state || base.state || '',
+    zip: existing?.zip || localExisting?.zip || base.zip || '',
+    country: existing?.country || localExisting?.country || base.country || '',
+    transferVerificationCode: existing?.transferVerificationCode || localExisting?.transferVerificationCode || base.transferVerificationCode || ''
+  };
   await window.NB_FIREBASE.upsert('users', uid, profile);
   return profile;
 }
@@ -131,12 +164,17 @@ function verifyCredentials(email, password) {
 function finalizeLogin(user) {
   STATE.user = user;
   sessionStorage.setItem('nb_session', user.id);
+  sessionStorage.setItem('nb_session_role', user.role || 'customer');
   return { ok: true };
 }
 
-function logout() {
+async function logout() {
   STATE.user = null;
   sessionStorage.removeItem('nb_session');
+  sessionStorage.removeItem('nb_session_role');
+  try {
+    if (window.NB_FIREBASE?.signOutUser) await window.NB_FIREBASE.signOutUser();
+  } catch (_) {}
   location.href = 'app.html'; // Redirect to login
 }
 
@@ -286,23 +324,6 @@ function renderAuthForm(type='login') {
       <button class="btn-nb btn-nb-primary w-100 justify-content-center" style="padding:.75rem;" onclick="runLocked(this, doLoginStart, 'Signing in...')"><i class="bi bi-box-arrow-in-right"></i> Continue</button>
       <div class="text-center mt-3" style="font-size:.82rem;color:var(--nb-muted);">No account? <a href="#" style="color:var(--nb-accent);" onclick="renderAuthForm('register')">Create one</a></div>
     `;
-    // Removed demo accounts hint for "real" bank feel
-  } else if (type === 'login-otp') {
-    const pending = getPendingLoginOtp();
-    const masked = pending?.email ? pending.email.replace(/^(.{2}).+(@.+)$/, (_, a, b) => `${a}••••${b}`) : '';
-    c.innerHTML = `
-      <div class="form-group"><label>Email Address</label><input class="nb-input" id="lo-email" type="email" value="${pending?.email || ''}" disabled/></div>
-      <div class="form-group"><label>Verification Code</label><input class="nb-input" id="lo-otp" maxlength="12" placeholder="Email OTP or access code" style="letter-spacing:2px;text-align:center;font-size:1.05rem;"/></div>
-      <div class="d-flex justify-content-between align-items-center mb-3" style="font-size:.82rem;">
-        <span style="color:var(--nb-muted);">Check email: ${masked || 'your inbox'}</span>
-        <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="runLocked(this, resendLoginOtp, 'Resending...')">Resend</button>
-      </div>
-      <div class="mb-3" style="font-size:.82rem;color:var(--nb-muted);">
-        Didn’t get an email? Use your access code (from admin or shown at registration).
-      </div>
-      <button class="btn-nb btn-nb-primary w-100 justify-content-center" style="padding:.75rem;" onclick="runLocked(this, doLoginVerify, 'Verifying...')"><i class="bi bi-shield-check"></i> Verify & Sign In</button>
-      <div class="text-center mt-3" style="font-size:.82rem;color:var(--nb-muted);"><a href="#" style="color:var(--nb-accent);" onclick="clearPendingLoginOtp();renderAuthForm('login')">Back</a></div>
-    `;
   } else {
     c.innerHTML = `
       <div class="row g-2">
@@ -349,6 +370,7 @@ async function doLoginStart() {
   try {
     const email = normalizeEmail(document.getElementById('a-email').value);
     const pass = document.getElementById('a-pass').value;
+    clearPendingLoginOtp();
     if (window.NB_FIREBASE?.auth) {
       const cloud = await cloudSignInOrBootstrap(email, pass);
       if (!cloud.ok) return toast(cloud.msg, 'error');
@@ -399,7 +421,7 @@ async function doLoginStart() {
         } catch (_) {}
         showModal('Verify Your Email', `
           <p style="font-size:.88rem;color:var(--nb-muted);margin-bottom:.75rem;">We sent a verification link to <strong>${normalizeEmail(cloud.firebaseUser.email)}</strong>.</p>
-          <p style="font-size:.82rem;color:var(--nb-muted);">You can still continue to enter your login code, but please verify your email.</p>`,
+          <p style="font-size:.82rem;color:var(--nb-muted);">Please verify your email for full account security. After verification, you can keep signing in with your email and password.</p>`,
           `<div class="d-flex gap-2 justify-content-end">
             <button class="btn-nb btn-nb-outline" onclick="closeModal()">Close</button>
             <button class="btn-nb btn-nb-primary" onclick="runLocked(this, resendVerificationEmail, 'Sending...')">Resend Email</button>
@@ -413,9 +435,17 @@ async function doLoginStart() {
         profile = null;
       }
       if (!profile) {
+        const cachedUser = DB.users.getById(cloud.firebaseUser.uid)
+          || DB.users.getByEmail(normalizeEmail(cloud.firebaseUser.email))
+          || DB.users.getAll().find(u => normalizeEmail(u.email) === normalizeEmail(cloud.firebaseUser.email))
+          || null;
+        const fallbackName = (cachedUser?.name && cachedUser.name !== 'User')
+          ? cachedUser.name
+          : (cloud.firebaseUser.displayName || normalizeEmail(cloud.firebaseUser.email).split('@')[0].replace(/[._-]+/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()) || 'User');
         const fallback = {
+          ...cachedUser,
           id: cloud.firebaseUser.uid,
-          name: cloud.firebaseUser.displayName || 'User',
+          name: fallbackName,
           email: normalizeEmail(cloud.firebaseUser.email),
           role: isStaff ? 'admin' : 'customer',
           status: 'active',
@@ -436,8 +466,8 @@ async function doLoginStart() {
       if (isStaff || ['admin','superadmin','teller'].includes(sessionUser?.role)) {
         return window.location.href = 'admin.html';
       }
-      await requestLoginOtp(sessionUser);
-      return renderAuthForm('login-otp');
+      toast('Signed in successfully.', 'success');
+      return bootApp();
     }
     const result = verifyCredentials(email, pass);
     if (!result.ok) return toast(result.msg, 'error');
@@ -445,8 +475,9 @@ async function doLoginStart() {
       finalizeLogin(result.user);
       return window.location.href = 'admin.html';
     }
-    await requestLoginOtp(result.user);
-    renderAuthForm('login-otp');
+    finalizeLogin(result.user);
+    toast('Signed in successfully.', 'success');
+    bootApp();
   } catch (e) {
     const code = e?.code ? ` (${e.code})` : '';
     toast(`Login failed${code}. Check Firebase Auth/Firestore settings.`, 'error');
@@ -529,11 +560,10 @@ function doRegister() {
         DB.accounts.create({ id:'a'+uid(), userId:id, type:accType, balance:0, iban:Math.floor(1000000000 + Math.random() * 9000000000).toString(), swift:'NXBKGB21', status:'active', limit:5000, createdAt:new Date().toISOString().slice(0,10) });
         await window.NB_FIREBASE.upsert('users', id, user);
         try { await DB.cloud.syncDown(); } catch (_) {}
-        toast('Account created. If you don’t receive a login code by email, contact support for your access code.', 'info');
         toast('Verification email sent. Please verify your email.', 'success');
-        await requestLoginOtp(user);
-        renderAuthForm('login-otp');
-        toast('Registration successful. Please verify your login code.', 'success');
+        finalizeLogin(user);
+        toast('Registration successful.', 'success');
+        bootApp();
       } catch (_) {
         toast('Unable to register. Please try again.', 'error');
       }
@@ -547,8 +577,7 @@ function doRegister() {
   DB.accounts.create({ id:'a'+uid(), userId:id, type:accType, balance:0, iban:Math.floor(1000000000 + Math.random() * 9000000000).toString(), swift:'NXBKGB21', status:'active', limit:5000, createdAt:new Date().toISOString().slice(0,10) });
   const res = verifyCredentials(email, pass);
   if (!res.ok) { toast('Registration successful. Please sign in.', 'success'); return renderAuthForm('login'); }
-  toast('Account created. If you don’t receive a login code by email, contact support for your access code.', 'info');
-  requestLoginOtp(res.user);
-  renderAuthForm('login-otp');
-  toast('Registration successful. Please verify your login code.', 'success');
+  finalizeLogin(res.user);
+  toast('Registration successful.', 'success');
+  bootApp();
 }

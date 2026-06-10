@@ -31,7 +31,7 @@
           </svg>
           Credit<span>Financials</span> <span class="admin-badge">Admin</span>
         </a>
-        <button class="btn-nb btn-nb-outline btn-nb-sm d-lg-none" onclick="toggleSidebar(false)" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);"><i class="bi bi-x-lg"></i></button>
+        <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="toggleSidebar(false)" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="sidebar-user">
         <div class="d-flex align-items-center gap-3">
@@ -67,7 +67,7 @@
     <div class="main-content">
       <div class="topbar">
         <div class="d-flex align-items-center gap-3">
-          <button class="btn-nb btn-nb-outline d-lg-none" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+          <button class="btn-nb btn-nb-outline" onclick="toggleSidebar(true)"><i class="bi bi-list"></i></button>
           <div class="topbar-title">Admin Portal</div>
         </div>
         <div class="d-flex align-items-center gap-3">
@@ -114,12 +114,22 @@
       if(themeBtn) themeBtn.innerHTML = savedTheme==='dark' ? '<i class="bi bi-moon"></i>' : '<i class="bi bi-sun"></i>';
 
       // Check Session
-      if (!restoreSession() || !isAdmin()) {
+      let hasAdminSession = restoreSession() && isAdmin();
+      if (!hasAdminSession && window.NB_FIREBASE?.auth?.currentUser && DB?.cloud?.syncDown) {
+        try {
+          await DB.cloud.syncDown();
+          const uid = window.NB_FIREBASE.auth.currentUser.uid;
+          const u = DB.users.getById(uid);
+          if (u) {
+            STATE.user = u;
+            sessionStorage.setItem('nb_session', u.id);
+            hasAdminSession = isAdmin();
+          }
+        } catch (_) {}
+      }
+      if (!hasAdminSession) {
         location.href = 'app.html';
       } else {
-        try {
-          if (DB?.cloud?.syncDown && window.NB_FIREBASE?.auth?.currentUser) await DB.cloud.syncDown();
-        } catch (_) {}
         try { if (DB?.cloud?.watch) await DB.cloud.watch(); } catch (_) {}
         const u = STATE.user;
         document.getElementById('sidebar-name').textContent = u.name;
