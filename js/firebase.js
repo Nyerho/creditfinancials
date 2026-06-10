@@ -1,4 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
 import {
   getAuth,
   applyActionCode,
@@ -24,16 +25,18 @@ import {
   where
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-const firebaseConfig = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  storageBucket: '',
-  messagingSenderId: '',
-  appId: ''
-};
+const firebaseConfig = { 
+  apiKey: "AIzaSyAo-ZYMA_OoiuzQEqCS3xGL3xTFTnYpIuk", 
+  authDomain: "creditfinancials-5c56c.firebaseapp.com", 
+  projectId: "creditfinancials-5c56c", 
+  storageBucket: "creditfinancials-5c56c.firebasestorage.app", 
+  messagingSenderId: "453204384940", 
+  appId: "1:453204384940:web:2047c9493384277b7c9309", 
+  measurementId: "G-MPHLEHZ5PM" 
+}; 
 
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 let secondaryApp = null;
