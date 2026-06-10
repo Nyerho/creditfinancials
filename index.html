@@ -379,6 +379,93 @@
       }
     }
 
+    /* Navbar Toggle */
+    .mobile-nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1100;
+    }
+    .scrolled .mobile-nav-toggle { color: var(--nb-text); }
+    
+    @media (max-width: 991px) {
+      .mobile-nav-toggle { display: block; }
+      .main-nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background: var(--nb-card);
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 80px 30px;
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+        z-index: 1050;
+      }
+      .main-nav.active { right: 0; }
+      .nav-link-custom { color: var(--nb-text) !important; font-size: 18px; width: 100%; padding: 15px 0; border-bottom: 1px solid var(--nb-border); }
+      .nav-preview { display: none !important; }
+    }
+
+    /* Stats Slideshow */
+    .stats-slideshow-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 500px;
+      overflow: hidden;
+    }
+    .stats-image-side {
+      background-image: url('https://images.unsplash.com/photo-1579621970795-87faff2f9050?auto=format&fit=crop&q=80&w=1200');
+      background-size: cover;
+      background-position: center;
+    }
+    .stats-content-side {
+      background: #020617;
+      padding: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+    .stat-slide {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .stat-slide.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .stat-slide .val { font-size: 82px; font-weight: 800; color: var(--nb-accent); margin-bottom: 10px; font-family: var(--font-heading); }
+    .stat-slide .label { font-size: 16px; text-transform: uppercase; letter-spacing: 4px; color: rgba(255,255,255,0.4); font-weight: 700; }
+
+    @media (max-width: 991px) {
+      .stats-slideshow-wrap { grid-template-columns: 1fr; }
+      .stats-image-side { height: 300px; }
+      .stats-content-side { padding: 60px 30px; min-height: 400px; }
+      .stat-slide { left: 30px; right: 30px; }
+      .stat-slide .val { font-size: 60px; }
+    }
+
+    /* Better Detail Animation */
+    #account-detail {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+    .detail-anim-out { opacity: 0; transform: scale(0.95) translateY(10px) rotateX(-5deg); }
+    .detail-anim-in { opacity: 1; transform: scale(1) translateY(0) rotateX(0); }
+
     /* Sections */
     .section-padding { padding: 140px 0; }
     .badge-premium {
@@ -454,7 +541,10 @@
         <span class="h4 mb-0 fw-bolder text-white brand-text">Credit<span style="color:#10b981;">Financials</span></span>
       </a>
       
-      <nav class="d-none d-lg-flex align-items-center gap-4">
+      <nav class="d-none d-lg-flex align-items-center gap-4 main-nav">
+        <div class="nav-item-wrapper">
+          <a href="#about" class="nav-link-custom">About</a>
+        </div>
         <div class="nav-item-wrapper">
           <a href="#" class="nav-link-custom">Personal</a>
           <div class="nav-preview">
@@ -528,6 +618,10 @@
         </button>
         <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;">Online Portal</a>
       </nav>
+      
+      <button class="mobile-nav-toggle" onclick="toggleMobileNav()">
+        <i class="bi bi-list"></i>
+      </button>
     </div>
   </header>
 
@@ -566,25 +660,67 @@
     </div>
   </section>
 
-  <!-- STATISTICS SECTION -->
-  <section class="border-bottom" style="background: var(--nb-bg);">
+  <!-- STATISTICS SECTION (Slideshow) -->
+  <section class="stats-slideshow-wrap">
+    <div class="stats-image-side"></div>
+    <div class="stats-content-side">
+      <div class="stat-slide active" data-index="0">
+        <div class="val">25+</div>
+        <div class="label">Years of Excellence</div>
+      </div>
+      <div class="stat-slide" data-index="1">
+        <div class="val">$140B+</div>
+        <div class="label">Total Assets Managed</div>
+      </div>
+      <div class="stat-slide" data-index="2">
+        <div class="val">1200+</div>
+        <div class="label">Global Partners</div>
+      </div>
+      <div class="stat-slide" data-index="3">
+        <div class="val">99.9%</div>
+        <div class="label">Uptime Reliability</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section id="about" class="section-padding bg-white">
     <div class="container">
-      <div class="row g-0">
-        <div class="col-md-3 stat-box">
-          <div class="stat-val">25+</div>
-          <div class="stat-label">Years of Excellence</div>
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <span class="badge-premium">Our Legacy</span>
+          <h2 class="display-4 mb-4">A Tradition of <br><span class="text-success">Financial Sovereignty.</span></h2>
+          <p class="lead text-muted mb-4">Founded on the principles of absolute security and bespoke service, Credit Financials has grown from a private vault into a global leader in digital wealth management.</p>
+          <div class="row g-4 mb-5">
+            <div class="col-sm-6">
+              <div class="d-flex align-items-start gap-3">
+                <i class="bi bi-shield-lock-fill text-success fs-3"></i>
+                <div>
+                  <h6 class="fw-bold mb-1">Elite Security</h6>
+                  <p class="small text-muted mb-0">Multi-layer encryption and offshore asset protection.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="d-flex align-items-start gap-3">
+                <i class="bi bi-globe-central-south-asia text-success fs-3"></i>
+                <div>
+                  <h6 class="fw-bold mb-1">Global Reach</h6>
+                  <p class="small text-muted mb-0">Seamless operations across 4 continents and 120 countries.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-dark rounded-pill px-5 py-3 fw-bold">Read Our Vision</button>
         </div>
-        <div class="col-md-3 stat-box">
-          <div class="stat-val">$140B+</div>
-          <div class="stat-label">Total Assets Managed</div>
-        </div>
-        <div class="col-md-3 stat-box">
-          <div class="stat-val">1200+</div>
-          <div class="stat-label">Global Partners</div>
-        </div>
-        <div class="col-md-3 stat-box">
-          <div class="stat-val">99.9%</div>
-          <div class="stat-label">Uptime Reliability</div>
+        <div class="col-lg-6">
+          <div class="position-relative">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" class="img-fluid rounded-4 shadow-xl" alt="Office">
+            <div class="position-absolute bottom-0 start-0 p-4 m-4 bg-dark text-white rounded-3 shadow-lg d-none d-md-block animate__animated animate__fadeInLeft">
+              <div class="h3 mb-0 fw-bold">140+</div>
+              <div class="small opacity-50">Global Jurisdictions</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1005,6 +1141,27 @@
       }, { threshold: 0.1 });
       document.querySelectorAll('section > div').forEach(el => observer.observe(el));
 
+      // Mobile Nav Toggle
+      window.toggleMobileNav = () => {
+        document.querySelector('.main-nav').classList.toggle('active');
+        const icon = document.querySelector('.mobile-nav-toggle i');
+        icon.classList.toggle('bi-list');
+        icon.classList.toggle('bi-x');
+      };
+
+      // Stats Slideshow Logic
+      (function() {
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.stat-slide');
+        if (slides.length === 0) return;
+
+        setInterval(() => {
+          slides[currentSlide].classList.remove('active');
+          currentSlide = (currentSlide + 1) % slides.length;
+          slides[currentSlide].classList.add('active');
+        }, 4000);
+      })();
+
       // Account Selector Interactivity
       window.switchAccount = (btn, type) => {
         // Update Buttons
@@ -1075,8 +1232,8 @@
         const detail = document.getElementById('account-detail');
         
         // Add fade out
-        detail.style.opacity = '0';
-        detail.style.transform = 'translateY(10px)';
+        detail.classList.remove('detail-anim-in');
+        detail.classList.add('detail-anim-out');
         
         setTimeout(() => {
           detail.innerHTML = `
@@ -1110,11 +1267,9 @@
             </div>
           `;
           
-          // Fade in
-          detail.style.transition = '0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-          detail.style.opacity = '1';
-          detail.style.transform = 'translateY(0)';
-        }, 200);
+          detail.classList.remove('detail-anim-out');
+          detail.classList.add('detail-anim-in');
+        }, 300);
       };
     })();
   </script>
