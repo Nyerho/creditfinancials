@@ -222,6 +222,14 @@
       text-align: center;
     }
     .stat-box:last-child { border: none; }
+    @media (max-width: 768px) {
+      .stat-box {
+        border-right: none;
+        border-bottom: 1px solid var(--nb-border);
+        padding: 30px 20px;
+      }
+      .stat-box:last-child { border-bottom: none; }
+    }
     .stat-val { font-size: 48px; font-weight: 800; color: var(--nb-accent); margin-bottom: 5px; }
     .stat-label { font-size: 14px; color: var(--nb-muted); font-weight: 600; text-transform: uppercase; }
 
@@ -245,7 +253,6 @@
     .services-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
-      grid-template-rows: repeat(2, 320px);
       gap: 24px;
     }
     .service-card {
@@ -257,6 +264,9 @@
       color: #fff;
       border: 1px solid rgba(255,255,255,0.05);
       transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
     }
     .service-card:hover { transform: translateY(-8px); border-color: var(--nb-accent); }
     .service-card.large-img {
@@ -334,12 +344,39 @@
     .benefit-item i { color: var(--nb-accent); }
 
     @media (max-width: 1200px) {
-      .services-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
+      .services-grid { 
+        display: flex;
+        flex-direction: column;
+      }
+      .service-card {
+        width: 100% !important;
+        grid-column: span 12 !important;
+      }
       .account-selector-wrap { grid-template-columns: 1fr; gap: 40px; padding: 40px; }
     }
     @media (max-width: 768px) {
-      .services-grid { grid-template-columns: 1fr; }
+      .services-grid { 
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .service-card {
+        width: 100% !important;
+        grid-column: span 12 !important;
+        padding: 30px 20px;
+        min-height: auto;
+      }
       .benefit-list { grid-template-columns: 1fr; }
+      .account-selector-wrap {
+        padding: 25px 15px;
+        border-radius: 25px;
+      }
+      .account-detail-card {
+        padding: 25px 15px;
+      }
+      .detail-stats {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Sections */
