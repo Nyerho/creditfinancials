@@ -241,6 +241,107 @@
     }
     .star-rating { color: var(--nb-gold); margin-bottom: 15px; }
 
+    /* New Services Grid (Screenshot 1 & 2) */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(2, 320px);
+      gap: 24px;
+    }
+    .service-card {
+      background: #020617;
+      border-radius: 32px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .service-card:hover { transform: translateY(-8px); border-color: var(--nb-accent); }
+    .service-card.large-img {
+      background-size: cover;
+      background-position: center;
+    }
+    .service-card.large-img .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(2,6,23,0.95) 0%, rgba(2,6,23,0.2) 100%);
+    }
+    .service-card.large-img .card-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+    
+    .service-icon-box {
+      width: 48px;
+      height: 48px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: var(--nb-accent);
+      margin-bottom: 24px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .service-card h3 { font-size: 24px; margin-bottom: 12px; color: #fff; }
+    .service-card p { font-size: 15px; color: rgba(255,255,255,0.6); margin: 0; }
+    .yield-badge { font-size: 42px; font-weight: 800; color: var(--nb-accent); font-family: var(--font-heading); margin: 15px 0; display: block; }
+    .yield-badge span { font-size: 16px; opacity: 0.6; margin-left: 5px; }
+
+    /* Account Selector (Screenshot 3) */
+    .account-selector-wrap {
+      background: #020617;
+      border-radius: 40px;
+      padding: 60px;
+      color: #fff;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 60px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .account-type-list { display: flex; flex-direction: column; gap: 16px; }
+    .account-type-btn {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 24px;
+      text-align: left;
+      transition: 0.3s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .account-type-btn:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+    .account-type-btn.active { background: rgba(16, 185, 129, 0.05); border-color: var(--nb-accent); }
+    .account-type-btn .btn-info h5 { font-size: 16px; margin: 0; color: #fff; }
+    .account-type-btn .btn-info p { font-size: 13px; color: var(--nb-muted); margin: 4px 0 0; }
+    .account-type-btn i { color: var(--nb-accent); opacity: 0; transition: 0.3s; }
+    .account-type-btn.active i { opacity: 1; transform: translateX(5px); }
+
+    .account-detail-card {
+      background: rgba(255,255,255,0.03);
+      border-radius: 30px;
+      padding: 40px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .detail-header { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 30px; margin-bottom: 30px; }
+    .detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+    .stat-item { padding: 20px; background: rgba(255,255,255,0.02); border-radius: 20px; }
+    .stat-item label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--nb-muted); display: block; margin-bottom: 8px; }
+    .stat-item .val { font-size: 24px; font-weight: 700; color: #fff; font-family: var(--font-heading); }
+    
+    .benefit-list { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+    .benefit-item { display: flex; align-items: center; gap: 12px; font-size: 14px; color: rgba(255,255,255,0.8); }
+    .benefit-item i { color: var(--nb-accent); }
+
+    @media (max-width: 1200px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
+      .account-selector-wrap { grid-template-columns: 1fr; gap: 40px; padding: 40px; }
+    }
+    @media (max-width: 768px) {
+      .services-grid { grid-template-columns: 1fr; }
+      .benefit-list { grid-template-columns: 1fr; }
+    }
+
     /* Sections */
     .section-padding { padding: 140px 0; }
     .badge-premium {
@@ -434,16 +535,165 @@
           <div class="stat-label">Years of Excellence</div>
         </div>
         <div class="col-md-3 stat-box">
-          <div class="stat-val">$140B</div>
-          <div class="stat-label">Total Credit Issued</div>
+          <div class="stat-val">$140B+</div>
+          <div class="stat-label">Total Assets Managed</div>
         </div>
         <div class="col-md-3 stat-box">
           <div class="stat-val">1200+</div>
-          <div class="stat-label">Global Branches</div>
+          <div class="stat-label">Global Partners</div>
         </div>
         <div class="col-md-3 stat-box">
-          <div class="stat-val">4.9/5</div>
-          <div class="stat-label">Customer Satisfaction</div>
+          <div class="stat-val">99.9%</div>
+          <div class="stat-label">Uptime Reliability</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES GRID SECTION (Screenshot 1 & 2) -->
+  <section class="section-padding bg-light">
+    <div class="container">
+      <div class="row mb-5 align-items-end">
+        <div class="col-lg-6">
+          <span class="badge-premium">Everything You Need</span>
+          <h2 class="display-4">Financial Ecosystem Built for Growth.</h2>
+        </div>
+        <div class="col-lg-5 offset-lg-1">
+          <p class="text-muted lead mb-0">A comprehensive suite of elite financial tools engineered to amplify your wealth and streamline your global operations.</p>
+        </div>
+      </div>
+
+      <div class="services-grid">
+        <!-- High Yield Savings (Top Left) -->
+        <div class="service-card" style="grid-column: span 4;">
+          <div class="service-icon-box"><i class="bi bi-piggy-bank"></i></div>
+          <h3>Elite Yield Reserve</h3>
+          <span class="yield-badge">4.25% <span>APY</span></span>
+          <p>Earn significantly more than traditional institutions. Your capital, working harder every single second.</p>
+        </div>
+
+        <!-- Online Banking (Top Right) -->
+        <div class="service-card large-img" style="grid-column: span 8; background-image: url('https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1200');">
+          <div class="card-overlay"></div>
+          <div class="card-content">
+            <h3>Digital Sovereignty</h3>
+            <p>Complete control from your device — instant global transfers, automated bill pay, and real-time biometric security.</p>
+          </div>
+        </div>
+
+        <!-- Business Banking (Bottom Left) -->
+        <div class="service-card large-img" style="grid-column: span 4; background-image: url('https://images.unsplash.com/photo-1454165833767-13143895960b?auto=format&fit=crop&q=80&w=800');">
+          <div class="card-overlay"></div>
+          <div class="card-content">
+            <h3>Enterprise Catalyst</h3>
+            <p>Scale your vision with dedicated advisors and automated corporate credit lines.</p>
+          </div>
+        </div>
+
+        <!-- Lending (Bottom Middle) -->
+        <div class="service-card" style="grid-column: span 4;">
+          <div class="service-icon-box"><i class="bi bi-house-door"></i></div>
+          <h3>Strategic Lending</h3>
+          <p>Competitive rates for mortgage, acquisition, and expansion with expedited approval cycles.</p>
+        </div>
+
+        <!-- Cards (Bottom Right) -->
+        <div class="service-card" style="grid-column: span 4;">
+          <div class="service-icon-box"><i class="bi bi-credit-card"></i></div>
+          <h3>Signature Tiers</h3>
+          <p>Unlimited cash back and exclusive lounge access with our prestigious Mastercard collection.</p>
+        </div>
+      </div>
+
+      <!-- Floating Nav Bar Mockup (Screenshot 1) -->
+      <div class="d-flex justify-content-center mt-5">
+        <div class="d-inline-flex align-items-center gap-4 py-3 px-5 bg-dark rounded-pill shadow-lg animate__animated animate__fadeInUp">
+          <a href="#" class="text-white text-decoration-none small fw-bold"><i class="bi bi-house-door me-2"></i>Home</a>
+          <a href="#" class="text-white-50 text-decoration-none small fw-bold"><i class="bi bi-credit-card me-2"></i>Cards</a>
+          <a href="#" class="text-white-50 text-decoration-none small fw-bold"><i class="bi bi-piggy-bank me-2"></i>Save</a>
+          <a href="#" class="text-white-50 text-decoration-none small fw-bold"><i class="bi bi-graph-up-arrow me-2"></i>Invest</a>
+          <a href="app.html" class="btn-premium py-2 px-4 ms-3" style="font-size: 12px;">Login <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACCOUNT SELECTOR SECTION (Screenshot 3) -->
+  <section class="section-padding bg-white">
+    <div class="container">
+      <div class="row mb-5">
+        <div class="col-lg-6">
+          <h2 class="display-4">Select Your Ideal Financial Vessel.</h2>
+          <p class="text-muted lead">Tailored account structures with zero commission, infinite liquidity, and uncompromising security protocols.</p>
+        </div>
+      </div>
+
+      <div class="account-selector-wrap">
+        <div class="account-type-list">
+          <div class="account-type-btn active" onclick="switchAccount(this, 'savings')">
+            <div class="btn-info">
+              <h5>Elite Yield Savings</h5>
+              <p>Earn 4.25% APY</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+          </div>
+          <div class="account-type-btn" onclick="switchAccount(this, 'checking')">
+            <div class="btn-info">
+              <h5>Premier Checking</h5>
+              <p>$500 Welcome Bonus</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+          </div>
+          <div class="account-type-btn" onclick="switchAccount(this, 'business')">
+            <div class="btn-info">
+              <h5>Business Platinum</h5>
+              <p>Scale your enterprise</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+          </div>
+          <div class="account-type-btn" onclick="switchAccount(this, 'private')">
+            <div class="btn-info">
+              <h5>Private Wealth</h5>
+              <p>Bespoke advisory</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+          </div>
+        </div>
+
+        <div class="account-detail-card" id="account-detail">
+          <div class="detail-header">
+            <span class="badge-premium mb-3">High Yield Savings</span>
+            <h3 class="display-6 text-white">Trust Star Savings</h3>
+          </div>
+          
+          <div class="detail-stats">
+            <div class="stat-item">
+              <label>Min. Deposit</label>
+              <div class="val">$0</div>
+            </div>
+            <div class="stat-item">
+              <label>Monthly Fee</label>
+              <div class="val">$0</div>
+            </div>
+            <div class="stat-item">
+              <label>Insured Status</label>
+              <div class="val text-success"><i class="bi bi-patch-check-fill"></i> Verified</div>
+            </div>
+          </div>
+
+          <div class="benefit-list">
+            <div class="benefit-item"><i class="bi bi-check-circle-fill"></i> 4.25% APY — Industry leading rate</div>
+            <div class="benefit-item"><i class="bi bi-check-circle-fill"></i> No minimum balance required</div>
+            <div class="benefit-item"><i class="bi bi-check-circle-fill"></i> Instant transfers & mobile banking</div>
+            <div class="benefit-item"><i class="bi bi-check-circle-fill"></i> Automated savings goals</div>
+            <div class="benefit-item"><i class="bi bi-check-circle-fill"></i> SIPC insured up to $500,000</div>
+            <div class="benefit-item"><i class="bi bi-check-circle-fill"></i> 24/7 Priority Support</div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <a href="app.html?view=register" class="btn-premium flex-grow-1 justify-content-center">Open Account</a>
+            <button class="btn btn-outline-light rounded-pill px-4 py-3 fw-bold">Learn More</button>
+          </div>
         </div>
       </div>
     </div>
@@ -640,6 +890,19 @@
     </div>
   </footer>
 
+  <!-- Floating Chat Button (Screenshot 1) -->
+  <div class="fixed-bottom p-4 d-flex justify-content-end pointer-events-none" style="z-index: 1050;">
+    <button class="btn bg-dark text-white rounded-pill shadow-lg d-flex align-items-center gap-3 py-3 px-4 animate__animated animate__bounceIn pointer-events-auto" style="border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+      <span class="small fw-bold">Chat with Advisor</span>
+      <div class="position-relative">
+        <i class="bi bi-chat-dots-fill fs-4 text-success"></i>
+        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle">
+          <span class="visually-hidden">Online</span>
+        </span>
+      </div>
+    </button>
+  </div>
+
   <script>
     (function () {
       // Loader
@@ -681,6 +944,118 @@
         });
       }, { threshold: 0.1 });
       document.querySelectorAll('section > div').forEach(el => observer.observe(el));
+
+      // Account Selector Interactivity
+      window.switchAccount = (btn, type) => {
+        // Update Buttons
+        document.querySelectorAll('.account-type-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Data for accounts
+        const data = {
+          savings: {
+            badge: 'High Yield Savings',
+            title: 'Elite Yield Reserve',
+            minDep: '$0',
+            fee: '$0',
+            benefits: [
+              '4.25% APY — Industry leading rate',
+              'No minimum balance required',
+              'Instant transfers & mobile banking',
+              'Automated savings goals',
+              'SIPC insured up to $500,000',
+              '24/7 Priority Support'
+            ]
+          },
+          checking: {
+            badge: 'Premier Checking',
+            title: 'Liquid Priority Account',
+            minDep: '$100',
+            fee: '$0',
+            benefits: [
+              '$500 Welcome Bonus on qualifying deposits',
+              'Zero overdraft fees, ever',
+              'Worldwide ATM fee reimbursements',
+              'Complimentary signature checks',
+              'Real-time fraud monitoring',
+              'Direct deposit up to 2 days early'
+            ]
+          },
+          business: {
+            badge: 'Business Platinum',
+            title: 'Enterprise Growth Vessel',
+            minDep: '$1,000',
+            fee: '$15 (Waived with $5k balance)',
+            benefits: [
+              'Unlimited corporate credit lines',
+              'Multi-user access & permission levels',
+              'Automated payroll integration',
+              'Global trade finance desk',
+              'Merchant service discounts',
+              'Dedicated Relationship Manager'
+            ]
+          },
+          private: {
+            badge: 'Private Wealth',
+            title: 'Sovereign Portfolio',
+            minDep: 'By Invitation',
+            fee: 'Custom',
+            benefits: [
+              'Bespoke investment strategies',
+              'Tax-optimized wealth structures',
+              'Exclusive private equity access',
+              'Offshore asset protection',
+              'Generational legacy planning',
+              'Direct line to Executive Office'
+            ]
+          }
+        };
+
+        const acc = data[type];
+        const detail = document.getElementById('account-detail');
+        
+        // Add fade out
+        detail.style.opacity = '0';
+        detail.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+          detail.innerHTML = `
+            <div class="detail-header">
+              <span class="badge-premium mb-3">${acc.badge}</span>
+              <h3 class="display-6 text-white">${acc.title}</h3>
+            </div>
+            
+            <div class="detail-stats">
+              <div class="stat-item">
+                <label>Min. Deposit</label>
+                <div class="val">${acc.minDep}</div>
+              </div>
+              <div class="stat-item">
+                <label>Monthly Fee</label>
+                <div class="val">${acc.fee}</div>
+              </div>
+              <div class="stat-item">
+                <label>Insured Status</label>
+                <div class="val text-success"><i class="bi bi-patch-check-fill"></i> Verified</div>
+              </div>
+            </div>
+
+            <div class="benefit-list">
+              ${acc.benefits.map(b => `<div class="benefit-item"><i class="bi bi-check-circle-fill"></i> ${b}</div>`).join('')}
+            </div>
+
+            <div class="d-flex gap-3">
+              <a href="app.html?view=register" class="btn-premium flex-grow-1 justify-content-center">Open Account</a>
+              <button class="btn btn-outline-light rounded-pill px-4 py-3 fw-bold">Learn More</button>
+            </div>
+          `;
+          
+          // Fade in
+          detail.style.transition = '0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+          detail.style.opacity = '1';
+          detail.style.transform = 'translateY(0)';
+        }, 200);
+      };
     })();
   </script>
 </body>
