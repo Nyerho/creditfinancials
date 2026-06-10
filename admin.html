@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Credit Financials</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="css/styles.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header d-flex justify-content-between align-items-center">
+        <a class="sidebar-logo" href="index.html">
+          <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;">
+            <rect width="40" height="40" rx="10" fill="url(#logo-grad-admin)"/>
+            <path d="M12 28V12H16L22 20L28 12H32V28H28V18L22 26L16 18V28H12Z" fill="white"/>
+            <defs>
+              <linearGradient id="logo-grad-admin" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1d6fa4"/>
+                <stop offset="1" stop-color="#0f2d52"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          Credit<span>Financials</span> <span class="admin-badge">Admin</span>
+        </a>
+        <button class="btn-nb btn-nb-outline btn-nb-sm d-lg-none" onclick="toggleSidebar(false)" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="sidebar-user">
+        <div class="d-flex align-items-center gap-3">
+          <div class="sidebar-avatar" id="sidebar-avatar">A</div>
+          <div>
+            <div style="font-weight:600;font-size:.9rem;" id="sidebar-name">Admin User</div>
+            <div style="font-size:.7rem;opacity:.7;" id="sidebar-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+      <nav>
+        <div class="nav-section">Management</div>
+        <div class="nav-item active" data-page="admin-dashboard" onclick="navigate('admin-dashboard')"><i class="bi bi-grid"></i> Dashboard</div>
+        <div class="nav-item" data-page="admin-users" onclick="navigate('admin-users')"><i class="bi bi-people"></i> Users</div>
+        <div class="nav-item" data-page="admin-kyc" onclick="navigate('admin-kyc')"><i class="bi bi-shield-check"></i> KYC Requests</div>
+        <div class="nav-item" data-page="admin-accounts" onclick="navigate('admin-accounts')"><i class="bi bi-wallet2"></i> Accounts</div>
+        <div class="nav-item" data-page="admin-transactions" onclick="navigate('admin-transactions')"><i class="bi bi-arrow-down-up"></i> Transactions</div>
+        <div class="nav-item" data-page="admin-loans" onclick="navigate('admin-loans')"><i class="bi bi-cash-stack"></i> Loans</div>
+        <div class="nav-item" data-page="admin-cards" onclick="navigate('admin-cards')"><i class="bi bi-credit-card"></i> Cards</div>
+        
+        <div class="nav-section">System</div>
+        <div class="nav-item" data-page="admin-reports" onclick="navigate('admin-reports')"><i class="bi bi-bar-chart"></i> Reports</div>
+        <div class="nav-item" data-page="admin-audit" onclick="navigate('admin-audit')"><i class="bi bi-shield-check"></i> Audit Log</div>
+        <div class="nav-item" data-page="admin-config" onclick="navigate('admin-config')"><i class="bi bi-gear"></i> Configuration</div>
+        
+        <div style="margin-top:auto;padding-top:1rem;border-top:1px solid rgba(255,255,255,.1);">
+          <div class="nav-item" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Sign Out</div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn-nb btn-nb-outline d-lg-none" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+          <div class="topbar-title">Admin Portal</div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="icon-btn" onclick="toggleTheme()" id="theme-btn"><i class="bi bi-sun"></i></button>
+          <div class="sidebar-avatar" id="topbar-avatar" style="width:32px;height:32px;font-size:.8rem;">A</div>
+        </div>
+      </div>
+
+      <div class="page-content" id="admin-content">
+        <!-- Content injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+  
+  <!-- Modal Overlay -->
+  <div class="nb-modal-overlay" id="modal-overlay" style="display:none;">
+    <div class="nb-modal" id="modal-box">
+      <div class="nb-modal-header">
+        <div class="nb-modal-title" id="modal-title">Modal Title</div>
+        <button class="nb-modal-close" onclick="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div id="modal-body"></div>
+      <div class="mt-4" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/firebase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    // Boot Admin
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check theme
+      const savedTheme = localStorage.getItem('nb_theme') || 'light';
+      document.documentElement.dataset.theme = savedTheme;
+      const themeBtn = document.getElementById('theme-btn');
+      if(themeBtn) themeBtn.innerHTML = savedTheme==='dark' ? '<i class="bi bi-moon"></i>' : '<i class="bi bi-sun"></i>';
+
+      // Check Session
+      if (!restoreSession() || !isAdmin()) {
+        location.href = 'app.html';
+      } else {
+        try {
+          if (DB?.cloud?.syncDown && window.NB_FIREBASE?.auth?.currentUser) await DB.cloud.syncDown();
+        } catch (_) {}
+        try { if (DB?.cloud?.watch) await DB.cloud.watch(); } catch (_) {}
+        const u = STATE.user;
+        document.getElementById('sidebar-name').textContent = u.name;
+        document.getElementById('sidebar-role').textContent = u.role.toUpperCase();
+        document.getElementById('sidebar-avatar').textContent = u.name.charAt(0);
+        document.getElementById('topbar-avatar').textContent = u.name.charAt(0);
+        
+        // Initial Render
+        navigate('admin-dashboard');
+      }
+    });
+
+    (function () {
+      let t = null;
+      window.addEventListener('nb_data_changed', () => {
+        if (t) clearTimeout(t);
+        t = setTimeout(() => {
+          if (!STATE.user) return;
+          if (document.getElementById('active-modal')) return;
+          navigate(STATE.page || 'admin-dashboard');
+        }, 120);
+      });
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const dark = html.dataset.theme === 'dark';
+      html.dataset.theme = dark ? 'light' : 'dark';
+      document.getElementById('theme-btn').innerHTML = dark ? '<i class="bi bi-moon"></i>' : '<i class="bi bi-sun"></i>';
+      localStorage.setItem('nb_theme', html.dataset.theme);
+    }
+  </script>
+</body>
+</html>

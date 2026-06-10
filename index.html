@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Credit Financials — Future of Banking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --nb-primary: #0f2d52;
+      --nb-accent: #1d6fa4;
+      --nb-light-accent: #e8f1fb;
+      --nb-gold: #c9a84c;
+      --nb-success: #12b76a;
+      --nb-danger: #f04438;
+      --nb-warning: #f79009;
+      --nb-bg: #f3f6fb;
+      --nb-card: #ffffff;
+      --nb-text: #1a1f36;
+      --nb-muted: #6b7280;
+      --nb-border: #e5e9f0;
+    }
+    [data-theme="dark"] {
+      --nb-bg: #0d1117;
+      --nb-card: #161b22;
+      --nb-text: #e6edf3;
+      --nb-muted: #8b949e;
+      --nb-border: rgba(255,255,255,.10);
+      --nb-light-accent: #1c2e45;
+    }
+    body { 
+      font-family: 'DM Sans', 'Poppins', sans-serif; 
+      background: var(--nb-bg); 
+      color: var(--nb-text); 
+      position: relative;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Hanken Grotesk', 'DM Sans', sans-serif; letter-spacing: -.2px; }
+    
+    .loader-wrap { position: fixed; inset: 0; background: var(--nb-bg); z-index: 10000; display: grid; place-items: center; transition: opacity .5s ease; }
+    .loader-wrap.fade-out { opacity: 0; pointer-events: none; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--nb-border); border-top-color: var(--nb-accent); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .main-header { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--nb-border); padding: 12px 0; }
+    [data-theme="dark"] .main-header { background: rgba(13,17,23,.85); border-color: rgba(255,255,255,.1); }
+    .nav-link { font-weight: 600; color: var(--nb-text) !important; font-size: 15px; }
+    .nav-link:hover { color: var(--nb-accent) !important; }
+
+    .banner-style-two { 
+      min-height: 80vh; 
+      display: flex; 
+      align-items: center; 
+      color: #fff !important; 
+      position: relative; 
+      background-size: cover; 
+      background-position: center;
+      transition: background-image .8s ease;
+      background-image: linear-gradient(135deg, rgba(15,45,82,0.92) 0%, rgba(29,111,164,0.82) 100%), url('https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1470');
+    }
+    .hero-title { font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 900; margin-bottom: 24px; line-height: 1.1; color: #fff; }
+    .hero-sub { font-size: 1.15rem; opacity: 0.9; max-width: 600px; margin-bottom: 40px; color: rgba(255,255,255,0.9); }
+
+    .btn-nb-primary { background: var(--nb-accent); color: #fff !important; border: none; padding: 12px 32px; border-radius: 12px; font-weight: 700; transition: all .2s; text-decoration: none; display: inline-block; }
+    .btn-nb-primary:hover { background: var(--nb-primary); transform: translateY(-2px); color: #fff !important; }
+    .btn-nb-outline { border: 2px solid rgba(255,255,255,.3); color: #fff !important; padding: 12px 32px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-block; transition: all .2s; }
+    .btn-nb-outline:hover { background: rgba(255,255,255,.1); border-color: #fff; color: #fff !important; }
+
+    .section-padding { padding: 100px 0; }
+    .feature-card-new { background: var(--nb-card); border: 1px solid var(--nb-border); border-radius: 22px; padding: 32px; height: 100%; transition: all .3s; }
+    .feature-card-new:hover { border-color: var(--nb-accent); transform: translateY(-5px); }
+    .icon-wrap-new { width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 24px; font-size: 24px; }
+
+    /* Market Leaderboard Styles */
+    .market-card { background: var(--nb-card); border: 1px solid var(--nb-border); border-radius: 24px; overflow: hidden; }
+    .market-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .market-table th { background: var(--nb-light-accent); padding: 16px; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--nb-muted); }
+    .market-table td { padding: 16px; border-top: 1px solid var(--nb-border); font-size: 15px; }
+    .blink-up { animation: blink-up-anim 0.5s ease; }
+    .blink-down { animation: blink-down-anim 0.5s ease; }
+    @keyframes blink-up-anim { 0% { background: transparent; } 50% { background: rgba(18, 183, 106, 0.2); } 100% { background: transparent; } }
+    @keyframes blink-down-anim { 0% { background: transparent; } 50% { background: rgba(240, 68, 56, 0.2); } 100% { background: transparent; } }
+
+    /* Contact Form Styles */
+    .contact-card { background: var(--nb-card); border: 1px solid var(--nb-border); border-radius: 24px; padding: 40px; }
+    .form-control { border-radius: 12px; border: 1px solid var(--nb-border); padding: 12px 16px; background: var(--nb-bg); color: var(--nb-text); }
+    .form-control:focus { border-color: var(--nb-accent); box-shadow: 0 0 0 4px rgba(29, 111, 164, 0.1); background: var(--nb-card); }
+
+    .main-footer { background: var(--nb-primary); color: #fff; padding: 80px 0 40px; }
+    .footer-widget h3 { color: #fff; font-weight: 800; margin-bottom: 24px; }
+    
+    .nb-reveal { opacity: 0; transform: translateY(20px); transition: all .8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .nb-reveal.nb-in { opacity: 1; transform: translateY(0); }
+
+    .nb-theme-toggle { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--nb-border); background: var(--nb-card); color: var(--nb-text); display: grid; place-items: center; cursor: pointer; }
+    
+    /* Smartsupp Placeholder */
+    .smartsupp-fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: #0045ff; color: #fff; display: grid; place-items: center; font-size: 24px; box-shadow: 0 8px 24px rgba(0,69,255,0.3); cursor: pointer; z-index: 1000; transition: transform 0.2s; }
+    .smartsupp-fab:hover { transform: scale(1.1); }
+  </style>
+</head>
+<body>
+
+  <div class="loader-wrap" id="loader">
+    <div class="text-center">
+      <div class="spinner mx-auto"></div>
+      <div class="mt-3 fw-bold text-uppercase" style="letter-spacing: 2px; color: var(--nb-primary);">Credit Financials</div>
+    </div>
+  </div>
+
+  <header class="main-header">
+    <div class="container d-flex align-items-center justify-content-between">
+      <a href="index.html" class="d-flex align-items-center gap-2" style="text-decoration:none;">
+        <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="10" fill="url(#logo-grad)"/>
+          <path d="M12 28V12H16L22 20L28 12H32V28H28V18L22 26L16 18V28H12Z" fill="white"/>
+          <defs>
+            <linearGradient id="logo-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1d6fa4"/>
+              <stop offset="1" stop-color="#0f2d52"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span style="font-weight:900;font-size:22px;color:var(--nb-text);letter-spacing:-0.5px;">Credit<span style="color:var(--nb-accent);">Financials</span></span>
+      </a>
+      <nav class="d-none d-lg-flex align-items-center gap-4">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#market" class="nav-link">Market</a>
+        <a href="#loans" class="nav-link">Loans</a>
+        <a href="#contact" class="nav-link">Contact</a>
+        <a href="app.html" class="btn-nb-primary py-2 px-4">Online Banking</a>
+        <button class="nb-theme-toggle" id="nb-theme-toggle"><i class="bi bi-moon-stars"></i></button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="banner-style-two">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-7 nb-reveal">
+          <h1 class="hero-title">Banking for the Digital Age</h1>
+          <p class="hero-sub">Experience seamless, secure, and smart banking with Credit Financials. Manage your finances, track spending, and grow your wealth—all in one place.</p>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="app.html?view=register" class="btn-nb-primary">Open an Account</a>
+            <a href="app.html" class="btn-nb-outline">Login Portal</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKET LEADERBOARD SECTION -->
+  <section id="market" class="section-padding" style="background: var(--nb-light-accent);">
+    <div class="container">
+      <div class="text-center mb-5 nb-reveal">
+        <h2 class="fw-bold">Global Market Overview</h2>
+        <p>Real-time updates from major stock exchanges.</p>
+      </div>
+      <div class="market-card nb-reveal">
+        <div class="table-responsive">
+          <table class="market-table">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Company</th>
+                <th>Price (USD)</th>
+                <th>Change</th>
+                <th>Market Cap</th>
+              </tr>
+            </thead>
+            <tbody id="market-body">
+              <!-- Live Data Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section id="features" class="section-padding">
+    <div class="container">
+      <div class="text-center mb-5 nb-reveal">
+        <h2 class="fw-bold">Tailored Financial Services</h2>
+        <p>Built for individuals and businesses alike.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6 nb-reveal">
+          <div class="feature-card-new">
+            <div class="icon-wrap-new" style="background: rgba(29,111,164,.1); color: var(--nb-accent);"><i class="bi bi-wallet2"></i></div>
+            <h3 class="fw-bold h5">Instant Accounts</h3>
+            <p>Open a fully functional checking or savings account in under 5 minutes from your phone.</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 nb-reveal">
+          <div class="feature-card-new">
+            <div class="icon-wrap-new" style="background: rgba(201,168,76,.1); color: var(--nb-gold);"><i class="bi bi-graph-up-arrow"></i></div>
+            <h3 class="fw-bold h5">Smart Investments</h3>
+            <p>Access global markets and invest in stocks, ETFs, and crypto with zero commission fees.</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 nb-reveal">
+          <div class="feature-card-new">
+            <div class="icon-wrap-new" style="background: rgba(18,183,106,.1); color: var(--nb-success);"><i class="bi bi-credit-card"></i></div>
+            <h3 class="fw-bold h5">Virtual Cards</h3>
+            <p>Generate instant virtual cards for secure online shopping and subscriptions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOANS SECTION -->
+  <section id="loans" class="section-padding" style="background: var(--nb-primary); color: #fff;">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 nb-reveal">
+          <h2 class="fw-bold display-5 mb-4">Flexible Loans for Every Need</h2>
+          <p class="mb-4 opacity-75">Whether you're buying a home, starting a business, or handling an emergency, our competitive rates and fast approval process have you covered.</p>
+          <ul class="list-unstyled mb-5">
+            <li class="mb-3 d-flex align-items-center gap-3"><i class="bi bi-check-circle-fill text-success fs-4"></i> Personal Loans up to $50,000</li>
+            <li class="mb-3 d-flex align-items-center gap-3"><i class="bi bi-check-circle-fill text-success fs-4"></i> Mortgage rates as low as 3.2%</li>
+            <li class="mb-3 d-flex align-items-center gap-3"><i class="bi bi-check-circle-fill text-success fs-4"></i> Instant Business Credit Lines</li>
+          </ul>
+          <a href="app.html?view=register" class="btn-nb-outline">Check Your Rate</a>
+        </div>
+        <div class="col-lg-6 nb-reveal">
+          <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000" class="img-fluid rounded-4 shadow-lg" alt="Loans">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT SECTION -->
+  <section id="contact" class="section-padding">
+    <div class="container">
+      <div class="row g-5">
+        <div class="col-lg-5 nb-reveal">
+          <h2 class="fw-bold mb-4">Get in Touch</h2>
+          <p class="mb-5">Have questions about our services? Our team is available 24/7 to assist you.</p>
+          <div class="d-flex gap-4 mb-4">
+            <div class="icon-wrap-new" style="background: var(--nb-light-accent); color: var(--nb-accent); min-width: 54px;"><i class="bi bi-geo-alt"></i></div>
+            <div>
+              <h5 class="fw-bold">Our Office</h5>
+              <p class="mb-0">123 Finance Street, New York, NY 10001</p>
+            </div>
+          </div>
+          <div class="d-flex gap-4">
+            <div class="icon-wrap-new" style="background: var(--nb-light-accent); color: var(--nb-accent); min-width: 54px;"><i class="bi bi-envelope"></i></div>
+            <div>
+              <h5 class="fw-bold">Email Us</h5>
+              <p class="mb-0">support@creditfinancials.com</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7 nb-reveal">
+          <div class="contact-card">
+            <form id="contactForm">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Full Name</label>
+                  <input type="text" class="form-control" placeholder="John Doe" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Email Address</label>
+                  <input type="email" class="form-control" placeholder="john@example.com" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold small">Subject</label>
+                  <select class="form-select form-control">
+                    <option>General Inquiry</option>
+                    <option>Account Support</option>
+                    <option>Loan Application</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold small">Message</label>
+                  <textarea class="form-control" rows="4" placeholder="How can we help you?" required></textarea>
+                </div>
+                <div class="col-12 mt-4">
+                  <button type="submit" class="btn-nb-primary w-100">Send Message</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="main-footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <h3>Credit Financials</h3>
+          <p>Secure, modern, and reliable banking for everyone. We are committed to helping you achieve your financial goals.</p>
+        </div>
+        <div class="col-lg-4">
+          <h5 class="fw-bold mb-3">Quick Links</h5>
+          <ul class="list-unstyled">
+            <li><a href="app.html" class="text-white-50 text-decoration-none">Online Banking</a></li>
+            <li><a href="app.html?view=register" class="text-white-50 text-decoration-none">Create Account</a></li>
+            <li><a href="#market" class="text-white-50 text-decoration-none">Market Watch</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4">
+          <h5 class="fw-bold mb-3">Legal</h5>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr class="my-5 opacity-10">
+      <div class="text-center text-white-50 small">
+        &copy; 2026 Credit Financials Inc. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <div class="smartsupp-fab" id="chatbot-trigger">
+    <i class="bi bi-chat-dots-fill"></i>
+  </div>
+
+  <script>
+    (function () {
+      // Loader Removal
+      function removeLoader() {
+        const loader = document.getElementById('loader');
+        if (loader) {
+          loader.classList.add('fade-out');
+          setTimeout(() => loader.remove(), 500);
+        }
+      }
+      window.addEventListener('load', removeLoader);
+      setTimeout(removeLoader, 3000);
+
+      // Theme Toggle
+      const html = document.documentElement;
+      const btn = document.getElementById('nb-theme-toggle');
+      const savedTheme = localStorage.getItem('nb_theme') || 'light';
+      html.dataset.theme = savedTheme;
+      if (btn) btn.innerHTML = savedTheme === 'dark' ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const newTheme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+          html.dataset.theme = newTheme;
+          localStorage.setItem('nb_theme', newTheme);
+          btn.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
+        });
+      }
+
+      // Scroll Animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add('nb-in');
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.nb-reveal').forEach(el => observer.observe(el));
+
+      // Live Market Data Simulation
+      const stocks = [
+        { sym: 'AAPL', name: 'Apple Inc.', price: 185.92, cap: '2.87T' },
+        { sym: 'MSFT', name: 'Microsoft Corp.', price: 402.12, cap: '3.01T' },
+        { sym: 'NVDA', name: 'NVIDIA Corp.', price: 721.33, cap: '1.78T' },
+        { sym: 'AMZN', name: 'Amazon.com Inc.', price: 168.44, cap: '1.74T' },
+        { sym: 'TSLA', name: 'Tesla Inc.', price: 193.57, cap: '615B' },
+        { sym: 'GOOGL', name: 'Alphabet Inc.', price: 142.12, cap: '1.79T' }
+      ];
+
+      const marketBody = document.getElementById('market-body');
+      
+      function updateMarkets() {
+        marketBody.innerHTML = stocks.map(s => {
+          const change = (Math.random() - 0.45) * 1.5;
+          const oldPrice = s.price;
+          s.price += change;
+          const up = change >= 0;
+          const blinkClass = up ? 'blink-up' : 'blink-down';
+          
+          return `
+            <tr class="${blinkClass}">
+              <td class="fw-bold">${s.sym}</td>
+              <td class="text-muted">${s.name}</td>
+              <td class="fw-bold">$${s.price.toFixed(2)}</td>
+              <td class="${up ? 'text-success' : 'text-danger'} fw-bold">
+                ${up ? '▲' : '▼'} ${Math.abs(change).toFixed(2)} (${Math.abs(change/oldPrice*100).toFixed(2)}%)
+              </td>
+              <td class="text-muted">${s.cap}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      setInterval(updateMarkets, 3000);
+      updateMarkets();
+
+      // Form Handling
+      document.getElementById('contactForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Thank you for your message! Our team will contact you shortly.');
+        e.target.reset();
+      });
+
+      // Chatbot Placeholder
+      document.getElementById('chatbot-trigger').addEventListener('click', () => {
+        alert('Smartsupp chatbot will be initialized here once the API key is provided.');
+      });
+    })();
+  </script>
+</body>
+</html>

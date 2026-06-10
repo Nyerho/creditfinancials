@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Credit Financials</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="css/styles.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="text-center mb-4">
+        <a class="auth-logo" href="index.html">
+          <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+            <rect width="40" height="40" rx="10" fill="url(#logo-grad-auth)"/>
+            <path d="M12 28V12H16L22 20L28 12H32V28H28V18L22 26L16 18V28H12Z" fill="white"/>
+            <defs>
+              <linearGradient id="logo-grad-auth" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1d6fa4"/>
+                <stop offset="1" stop-color="#0f2d52"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          Credit<span>Financials</span>
+        </a>
+        <p class="text-muted mt-2" style="font-size:.9rem;">Secure Online Banking Portal</p>
+      </div>
+      <div id="auth-form-container">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- APP LAYOUT -->
+  <div id="app" style="display:none;">
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header d-flex justify-content-between align-items-center">
+        <a class="sidebar-logo" href="index.html">
+          <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;">
+            <rect width="40" height="40" rx="10" fill="url(#logo-grad-side)"/>
+            <path d="M12 28V12H16L22 20L28 12H32V28H28V18L22 26L16 18V28H12Z" fill="white"/>
+            <defs>
+              <linearGradient id="logo-grad-side" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1d6fa4"/>
+                <stop offset="1" stop-color="#0f2d52"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          Credit<span>Financials</span>
+        </a>
+        <button class="btn-nb btn-nb-outline btn-nb-sm d-lg-none" onclick="toggleSidebar(false)" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="sidebar-user">
+        <div class="d-flex align-items-center gap-3">
+          <div class="sidebar-avatar" id="sidebar-avatar">U</div>
+          <div>
+            <div style="font-weight:600;font-size:.9rem;" id="sidebar-name">User Name</div>
+            <div style="font-size:.7rem;opacity:.7;" id="sidebar-role">Customer</div>
+          </div>
+        </div>
+      </div>
+      <nav id="sidebar-nav">
+        <!-- Injected by JS -->
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn-nb btn-nb-outline d-lg-none" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+          <div class="topbar-title" id="topbar-title">Overview</div>
+        </div>
+        <div class="topbar-actions">
+          <div class="icon-btn" onclick="toggleTheme()" id="theme-btn"><i class="bi bi-sun"></i></div>
+          <div class="icon-btn" onclick="showNotifications()" style="position:relative;">
+            <i class="bi bi-bell"></i>
+            <span class="badge-status badge-danger" id="notif-dot" style="position:absolute;top:5px;right:5px;width:8px;height:8px;padding:0;display:none;"></span>
+          </div>
+          <div class="sidebar-avatar" id="topbar-avatar" onclick="navigate('profile')" style="cursor:pointer;width:36px;height:36px;font-size:.9rem;">U</div>
+        </div>
+      </div>
+
+      <div class="page-content" id="page-content">
+        <!-- Content injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+  
+  <!-- Modal Overlay -->
+  <div class="nb-modal-overlay" id="modal-overlay" style="display:none;">
+    <div class="nb-modal" id="modal-box">
+      <div class="nb-modal-header">
+        <div class="nb-modal-title" id="modal-title">Modal Title</div>
+        <button class="nb-modal-close" onclick="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div id="modal-body"></div>
+      <div class="mt-4" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/firebase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // Boot App
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check theme
+      const savedTheme = localStorage.getItem('nb_theme') || 'light';
+      document.documentElement.dataset.theme = savedTheme;
+      const themeBtn = document.getElementById('theme-btn');
+      if(themeBtn) themeBtn.innerHTML = savedTheme==='dark' ? '<i class="bi bi-moon"></i>' : '<i class="bi bi-sun"></i>';
+
+      const params = new URLSearchParams(location.search);
+      const mode = params.get('mode');
+      const oobCode = params.get('oobCode');
+      if (mode === 'verifyEmail' && oobCode && window.NB_FIREBASE?.applyEmailVerificationCode) {
+        try {
+          await window.NB_FIREBASE.applyEmailVerificationCode(oobCode);
+          toast('Email verified successfully.', 'success');
+        } catch (_) {
+          toast('Email verification failed or expired.', 'error');
+        }
+        const hasSession = restoreSession() || !!window.NB_FIREBASE?.auth?.currentUser;
+        if (hasSession) {
+          if (isAdmin()) {
+            location.replace('admin.html');
+          } else {
+            location.replace('app.html');
+          }
+        } else {
+          location.replace('app.html?view=login');
+        }
+        return;
+      }
+
+      // Check Session
+      if (restoreSession()) {
+        if (isAdmin()) {
+          location.href = 'admin.html';
+        } else {
+          bootApp();
+        }
+      } else {
+        if (window.NB_FIREBASE?.auth?.currentUser && DB?.cloud?.syncDown) {
+          try {
+            await DB.cloud.syncDown();
+            const uid = window.NB_FIREBASE.auth.currentUser.uid;
+            const u = DB.users.getById(uid);
+            if (u) {
+              STATE.user = u;
+              sessionStorage.setItem('nb_session', u.id);
+              bootApp();
+              return;
+            }
+          } catch (_) {}
+        }
+        const view = (params.get('view') || '').toLowerCase();
+        renderAuthForm(view === 'register' ? 'register' : 'login');
+      }
+    });
+  </script>
+</body>
+</html>
