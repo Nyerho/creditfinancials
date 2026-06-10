@@ -486,6 +486,9 @@
             </div>
           </div>
         </div>
+        <button class="btn border-0 p-2 me-2" onclick="toggleTheme()" id="theme-toggle">
+          <i class="bi bi-moon-stars-fill text-white fs-5" id="theme-icon"></i>
+        </button>
         <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;">Online Portal</a>
       </nav>
     </div>
@@ -602,17 +605,6 @@
           <div class="service-icon-box"><i class="bi bi-credit-card"></i></div>
           <h3>Signature Tiers</h3>
           <p>Unlimited cash back and exclusive lounge access with our prestigious Mastercard collection.</p>
-        </div>
-      </div>
-
-      <!-- Floating Nav Bar Mockup (Screenshot 1) -->
-      <div class="d-flex justify-content-center mt-5">
-        <div class="d-inline-flex align-items-center gap-4 py-3 px-5 bg-dark rounded-pill shadow-lg animate__animated animate__fadeInUp">
-          <a href="#" class="text-white text-decoration-none small fw-bold"><i class="bi bi-house-door me-2"></i>Home</a>
-          <a href="#" class="text-white-50 text-decoration-none small fw-bold"><i class="bi bi-credit-card me-2"></i>Cards</a>
-          <a href="#" class="text-white-50 text-decoration-none small fw-bold"><i class="bi bi-piggy-bank me-2"></i>Save</a>
-          <a href="#" class="text-white-50 text-decoration-none small fw-bold"><i class="bi bi-graph-up-arrow me-2"></i>Invest</a>
-          <a href="app.html" class="btn-premium py-2 px-4 ms-3" style="font-size: 12px;">Login <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
@@ -916,17 +908,48 @@
         const header = document.getElementById('header');
         const brand = document.querySelector('.brand-text');
         const links = document.querySelectorAll('.nav-link-custom');
+        const themeIcon = document.getElementById('theme-icon');
         
         if (window.scrollY > 50) {
           header.classList.add('scrolled');
           brand.classList.replace('text-white', 'text-dark');
           links.forEach(l => l.style.color = 'var(--nb-text)');
+          if (document.documentElement.getAttribute('data-theme') !== 'dark') {
+            themeIcon.classList.replace('text-white', 'text-dark');
+          }
         } else {
           header.classList.remove('scrolled');
           brand.classList.replace('text-dark', 'text-white');
           links.forEach(l => l.style.color = '#fff');
+          themeIcon.classList.replace('text-dark', 'text-white');
         }
       });
+
+      // Theme Toggle Logic
+      window.toggleTheme = () => {
+        const html = document.documentElement;
+        const icon = document.getElementById('theme-icon');
+        const isDark = html.getAttribute('data-theme') === 'dark';
+        
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          icon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          icon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+          localStorage.setItem('theme', 'dark');
+        }
+      };
+
+      // Initialize Theme
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.getElementById('theme-icon').classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+        }
+      })();
 
       // Background Parallax/Zoom
       const hero = document.querySelector('.hero-engine');
