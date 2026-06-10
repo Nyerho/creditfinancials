@@ -59,7 +59,7 @@
       top: 0; left: 0; right: 0; 
       z-index: 1000; 
       padding: 30px 0; 
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
     }
     .main-header.scrolled { 
       position: fixed; 
@@ -87,11 +87,11 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      width: 280px;
+      width: 320px;
       background: var(--nb-card);
       border: 1px solid var(--nb-border);
       border-radius: 20px;
-      padding: 20px;
+      padding: 25px;
       opacity: 0;
       visibility: hidden;
       transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -105,6 +105,47 @@
     }
     .nav-preview h6 { color: var(--nb-accent); font-size: 12px; margin-bottom: 10px; }
     .nav-preview p { font-size: 13px; color: var(--nb-muted); margin: 0; }
+    
+    .nav-preview-item { display: flex; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--nb-border); }
+    .nav-preview-icon { width: 40px; height: 40px; background: var(--nb-light-accent); border-radius: 10px; display: grid; place-items: center; color: var(--nb-accent); }
+
+    /* Branded CSS Credit Cards */
+    .nb-credit-card {
+      width: 100%;
+      height: 220px;
+      border-radius: 20px;
+      padding: 25px;
+      position: relative;
+      color: #fff;
+      margin-bottom: 30px;
+      transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      perspective: 1000px;
+    }
+    .nb-credit-card:hover { transform: translateY(-10px) rotateX(5deg) rotateY(5deg); }
+    
+    .card-elite { background: linear-gradient(135deg, #0f172a 0%, #334155 100%); border: 1px solid rgba(251, 191, 36, 0.3); }
+    .card-emerald { background: linear-gradient(135deg, #064e3b 0%, #10b981 100%); border: 1px solid rgba(255,255,255,0.1); }
+    .card-gold { background: linear-gradient(135deg, #78350f 0%, #fbbf24 100%); border: 1px solid rgba(255,255,255,0.1); }
+    
+    .card-chip { width: 45px; height: 35px; background: linear-gradient(135deg, #e5e7eb, #9ca3af); border-radius: 8px; position: relative; }
+    .card-chip::after { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; }
+    .card-brand { font-family: var(--font-heading); font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
+    .card-number { font-family: 'JetBrains Mono', monospace; font-size: 20px; letter-spacing: 3px; margin: 20px 0; }
+    .card-footer { display: flex; justify-content: space-between; align-items: flex-end; }
+    .card-holder-name { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+    
+    .card-logo-overlay { position: absolute; top: -30px; right: -30px; width: 150px; height: 150px; background: rgba(255,255,255,0.03); border-radius: 50%; }
+
+    /* Trust Bar */
+    .trust-bar { padding: 60px 0; background: var(--nb-card); border-top: 1px solid var(--nb-border); }
+    .trust-logo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 40px; align-items: center; justify-items: center; opacity: 0.5; }
+    .trust-logo-grid i { font-size: 32px; color: var(--nb-muted); }
 
     /* New Hero Section */
     .hero-engine {
@@ -213,6 +254,43 @@
       margin-bottom: 20px;
     }
 
+    /* Scroll Indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      z-index: 10;
+    }
+    .scroll-mouse {
+      width: 22px;
+      height: 36px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 15px;
+      position: relative;
+    }
+    .scroll-mouse::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 8px;
+      background: var(--nb-accent);
+      border-radius: 2px;
+      animation: scroll-wheel 1.5s infinite;
+    }
+    @keyframes scroll-wheel { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+
     .loader-wrap { 
       position: fixed; inset: 0; background: #020617; z-index: 10000; 
       display: flex; align-items: center; justify-content: center; 
@@ -242,29 +320,69 @@
         <div class="nav-item-wrapper">
           <a href="#" class="nav-link-custom">Personal</a>
           <div class="nav-preview">
-            <h6>Personal Banking</h6>
-            <p>Tailored accounts, flexible savings, and intuitive wealth management for your daily life.</p>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="bi bi-person-check text-success fs-5"></i>
+              <h6 class="mb-0 fw-bold">Personal Banking</h6>
+            </div>
+            <p class="mb-3">Tailored accounts, flexible savings, and intuitive wealth management for your daily life.</p>
+            <div class="nav-preview-item">
+              <div class="nav-preview-icon"><i class="bi bi-wallet2"></i></div>
+              <div>
+                <div class="fw-bold small">Checking & Savings</div>
+                <div class="text-muted" style="font-size: 11px;">High-yield interest accounts</div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="nav-item-wrapper">
           <a href="#" class="nav-link-custom">Business</a>
           <div class="nav-preview">
-            <h6>Business Solutions</h6>
-            <p>Empowering enterprises with smart credit lines, payroll tools, and global trade finance.</p>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="bi bi-briefcase text-success fs-5"></i>
+              <h6 class="mb-0 fw-bold">Business Solutions</h6>
+            </div>
+            <p class="mb-3">Empowering enterprises with smart credit lines, payroll tools, and global trade finance.</p>
+            <div class="nav-preview-item">
+              <div class="nav-preview-icon"><i class="bi bi-graph-up-arrow"></i></div>
+              <div>
+                <div class="fw-bold small">Corporate Credit</div>
+                <div class="text-muted" style="font-size: 11px;">Lines up to $2M USD</div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="nav-item-wrapper">
           <a href="#" class="nav-link-custom">Cards</a>
           <div class="nav-preview">
-            <h6>Premium Cards</h6>
-            <p>Unlock exclusive rewards, global lounge access, and zero-fee international spending.</p>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="bi bi-credit-card-2-front text-success fs-5"></i>
+              <h6 class="mb-0 fw-bold">Premium Cards</h6>
+            </div>
+            <p class="mb-3">Unlock exclusive rewards, global lounge access, and zero-fee international spending.</p>
+            <div class="nav-preview-item">
+              <div class="nav-preview-icon"><i class="bi bi-stars"></i></div>
+              <div>
+                <div class="fw-bold small">Elite Rewards</div>
+                <div class="text-muted" style="font-size: 11px;">Earn 5x points on travel</div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="nav-item-wrapper">
           <a href="#" class="nav-link-custom">Private</a>
           <div class="nav-preview">
-            <h6>Private Wealth</h6>
-            <p>Bespoke advisory and elite financial services for high-net-worth individuals.</p>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="bi bi-gem text-success fs-5"></i>
+              <h6 class="mb-0 fw-bold">Private Wealth</h6>
+            </div>
+            <p class="mb-3">Bespoke advisory and elite financial services for high-net-worth individuals.</p>
+            <div class="nav-preview-item">
+              <div class="nav-preview-icon"><i class="bi bi-shield-lock"></i></div>
+              <div>
+                <div class="fw-bold small">Asset Protection</div>
+                <div class="text-muted" style="font-size: 11px;">Secure offshore vaults</div>
+              </div>
+            </div>
           </div>
         </div>
         <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;">Online Portal</a>
@@ -286,6 +404,23 @@
             <a href="#cards" class="btn-outline-white">Compare Cards</a>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <div class="scroll-mouse"></div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR SECTION -->
+  <section class="trust-bar">
+    <div class="container">
+      <div class="trust-logo-grid">
+        <div class="d-flex align-items-center gap-2"><i class="bi bi-apple"></i> <span class="fw-bold">Pay</span></div>
+        <div class="d-flex align-items-center gap-2"><i class="bi bi-google"></i> <span class="fw-bold">Cloud</span></div>
+        <div class="d-flex align-items-center gap-2"><i class="bi bi-microsoft"></i> <span class="fw-bold">Azure</span></div>
+        <div class="d-flex align-items-center gap-2"><i class="bi bi-stripe"></i> <span class="fw-bold">Stripe</span></div>
+        <div class="d-flex align-items-center gap-2"><i class="bi bi-paypal"></i> <span class="fw-bold">PayPal</span></div>
       </div>
     </div>
   </section>
@@ -320,30 +455,67 @@
       <div class="text-center mb-5 pb-lg-4">
         <span class="badge-premium">Our Premium Collection</span>
         <h2 class="display-4">Elevate Your Spending.</h2>
+        <p class="text-muted lead">Choose a card that reflects your lifestyle. Pure status, zero compromise.</p>
       </div>
       <div class="row g-4">
         <div class="col-lg-4">
           <div class="card-product">
-            <img src="https://images.unsplash.com/photo-1549463599-2424460549ba?auto=format&fit=crop&q=80&w=800" class="card-img-float" alt="Elite Black">
+            <div class="nb-credit-card card-elite">
+              <div class="card-logo-overlay"></div>
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="card-brand">Credit Financials</div>
+                <i class="bi bi-wifi fs-4"></i>
+              </div>
+              <div class="card-chip"></div>
+              <div class="card-number">4582 •••• •••• 0012</div>
+              <div class="card-footer">
+                <div class="card-holder-name">Elite Member</div>
+                <div class="small fw-bold">VISA ELITE</div>
+              </div>
+            </div>
             <h4 class="mb-3">Elite Black Card</h4>
             <p class="text-muted mb-4">The ultimate statement in private banking. No preset spending limit and 24/7 concierge service.</p>
-            <a href="app.html" class="btn btn-outline-dark rounded-pill w-100 fw-bold">Apply Now</a>
+            <a href="app.html" class="btn btn-outline-dark rounded-pill w-100 fw-bold py-3">Apply for Elite</a>
           </div>
         </div>
         <div class="col-lg-4">
           <div class="card-product">
-            <img src="https://images.unsplash.com/photo-1613243555988-441166d4d6fd?auto=format&fit=crop&q=80&w=800" class="card-img-float" alt="Emerald Preferred">
+            <div class="nb-credit-card card-emerald">
+              <div class="card-logo-overlay"></div>
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="card-brand">Credit Financials</div>
+                <i class="bi bi-wifi fs-4"></i>
+              </div>
+              <div class="card-chip"></div>
+              <div class="card-number">5120 •••• •••• 8845</div>
+              <div class="card-footer">
+                <div class="card-holder-name">Emerald Preferred</div>
+                <div class="small fw-bold">MASTERCARD</div>
+              </div>
+            </div>
             <h4 class="mb-3">Emerald Preferred</h4>
             <p class="text-muted mb-4">Earn 5x points on global travel and dining. Included lounge access at 1,200+ airports.</p>
-            <a href="app.html" class="btn btn-outline-dark rounded-pill w-100 fw-bold">Apply Now</a>
+            <a href="app.html" class="btn btn-outline-dark rounded-pill w-100 fw-bold py-3">Get Emerald</a>
           </div>
         </div>
         <div class="col-lg-4">
           <div class="card-product">
-            <img src="https://images.unsplash.com/photo-1563013544-824ae1d704d3?auto=format&fit=crop&q=80&w=800" class="card-img-float" alt="Corporate Gold">
+            <div class="nb-credit-card card-gold">
+              <div class="card-logo-overlay"></div>
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="card-brand">Credit Financials</div>
+                <i class="bi bi-wifi fs-4"></i>
+              </div>
+              <div class="card-chip"></div>
+              <div class="card-number">4000 •••• •••• 9921</div>
+              <div class="card-footer">
+                <div class="card-holder-name">Corporate Executive</div>
+                <div class="small fw-bold">VISA GOLD</div>
+              </div>
+            </div>
             <h4 class="mb-3">Corporate Gold</h4>
             <p class="text-muted mb-4">Streamline business expenses with automated reporting and high credit limits for growth.</p>
-            <a href="app.html" class="btn btn-outline-dark rounded-pill w-100 fw-bold">Apply Now</a>
+            <a href="app.html" class="btn btn-outline-dark rounded-pill w-100 fw-bold py-3">Corporate Apply</a>
           </div>
         </div>
       </div>
