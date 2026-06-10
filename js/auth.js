@@ -185,7 +185,7 @@ async function sendGenericOtp(user, code, actionType, subject) {
     // Queue the email
     await window.NB_FIREBASE.queueEmail(
       normalizeEmail(user.email),
-      subject || 'Your NexaBank verification code',
+      subject || 'Your Credit Financials verification code',
       `Your verification code is ${code}. It expires in 10 minutes.`,
       `<p>Your verification code is <strong>${code}</strong>.</p><p>This code expires in 10 minutes.</p><p>If you didn't request this, please secure your account.</p>`
     );
@@ -241,7 +241,7 @@ async function sendTransactionAlert(userId, type, amount, desc) {
       </div>
       <p style="font-size:14px;color:#1a1f36;">Your total account balance is now <strong>${fmt(balance)}</strong>.</p>
       <p style="font-size:12px;color:#9ca3af;margin-top:30px;border-top:1px solid #e5e9f0;padding-top:12px;line-height:1.5;">
-        If you did not authorize this transaction, please contact NexaBank support immediately or freeze your cards in the mobile app.
+        If you did not authorize this transaction, please contact Credit Financials support immediately or freeze your cards in the mobile app.
       </p>
     </div>
   `;

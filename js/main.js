@@ -233,25 +233,25 @@ function renderDashboard(el) {
     <button class="dash-tab ${i===0?'active':''}" onclick="dashFilterCards('${t.replace(/'/g,"\\'")}', this)">${t}</button>
   `).join('');
 
-  const cardColors = ['purple','blue','gold'];
+  const cardColors = ['emerald','dark','gold'];
   const cardNodes = accounts.map((a,i)=>{
     const typeKey = a.type || 'Other';
     const masked = (a.iban || '').replace(/(.{4})/g,'$1 ').trim();
     return `
-      <div class="dash-card ${cardColors[i%cardColors.length]}" data-type="${typeKey.replace(/"/g,'&quot;')}" onclick="navigate('accounts')">
+      <div class="dash-card bank-card ${cardColors[i%cardColors.length]}" data-type="${typeKey.replace(/"/g,'&quot;')}" onclick="navigate('accounts')">
         <div class="d-flex justify-content-between align-items-start" style="position:relative;z-index:1;">
           <div>
-            <div class="label">${typeKey}</div>
-            <div class="bal mono">${fmt(a.balance)}</div>
+            <div class="label" style="font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.8;">${typeKey}</div>
+            <div class="bal mono" style="font-size:1.8rem;margin-top:5px;">${fmt(a.balance)}</div>
           </div>
-          <span class="badge-status badge-${a.status}" style="align-self:flex-start;">${a.status}</span>
+          <span class="badge-status badge-${a.status}" style="align-self:flex-start;backdrop-filter:blur(5px);background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);">${a.status}</span>
         </div>
-        <div class="num mono" style="position:relative;z-index:1;">${masked || '—'}</div>
-        <div class="meta" style="position:relative;z-index:1;">
-          <div style="font-weight:700;opacity:.95;">${user.name}</div>
-          <div style="display:flex;align-items:center;gap:.5rem;">
-            <i class="bi bi-wifi" style="transform: rotate(90deg);opacity:.85;"></i>
-            <i class="bi bi-credit-card-2-front" style="opacity:.9;"></i>
+        <div class="num mono" style="position:relative;z-index:1;margin-top:20px;letter-spacing:2px;font-size:0.9rem;">${masked || '—'}</div>
+        <div class="meta" style="position:relative;z-index:1;margin-top:25px;">
+          <div style="font-weight:700;font-size:1rem;letter-spacing:0.5px;">${user.name}</div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <i class="bi bi-wifi" style="transform: rotate(90deg);font-size:1.2rem;"></i>
+            <i class="bi bi-credit-card-2-front" style="font-size:1.2rem;"></i>
           </div>
         </div>
       </div>`;
@@ -264,16 +264,16 @@ function renderDashboard(el) {
     const sign = isDebit ? '-' : '+';
     return `
       <div class="txn-item" data-q="${(t.desc+' '+t.category).toLowerCase().replace(/"/g,'&quot;')}">
-        <div class="d-flex align-items-center gap-2" style="min-width:0;">
+        <div class="d-flex align-items-center gap-3" style="min-width:0;">
           <div class="txn-ico"><i class="bi bi-${icon}"></i></div>
           <div class="txn-meta">
-            <div class="txn-desc">${t.desc}</div>
-            <div class="txn-sub">${t.category} • ${fmtDate(t.ts)}</div>
+            <div class="txn-desc" style="font-size:0.95rem;font-weight:700;">${t.desc}</div>
+            <div class="txn-sub" style="font-size:0.8rem;opacity:0.7;">${t.category} • ${fmtDate(t.ts)}</div>
           </div>
         </div>
         <div class="text-end" style="flex-shrink:0;">
-          <div class="txn-amt ${amountClass}">${sign}${fmt(t.amount)}</div>
-          <div style="margin-top:.15rem;"><span class="badge-status badge-${t.status}" style="font-size:.65rem;">${t.status}</span></div>
+          <div class="txn-amt ${amountClass}" style="font-size:1rem;font-weight:800;">${sign}${fmt(t.amount)}</div>
+          <div style="margin-top:.25rem;"><span class="badge-status badge-${t.status}" style="font-size:.65rem;text-transform:uppercase;">${t.status}</span></div>
         </div>
       </div>`;
   }).join('');
@@ -283,81 +283,65 @@ function renderDashboard(el) {
   el.innerHTML = `
     <div class="dash-grid">
       <div>
-        <div class="dash-panel">
-          <div class="dash-title-row">
+        <div class="dash-panel" style="border:none;background:transparent;padding:0;">
+          <div class="dash-title-row mb-4">
             <div>
-              <div class="dash-title">My cards</div>
-              <div class="dash-sub">Quick view of your balances and recent activity</div>
+              <div class="dash-title" style="font-size:1.5rem;">Financial Overview</div>
+              <div class="dash-sub">Welcome back, ${user.name.split(' ')[0]}</div>
             </div>
             <div class="d-flex align-items-center gap-2" style="flex-wrap:wrap;justify-content:flex-end;">
               <div class="search-wrap dash-search">
                 <i class="bi bi-search"></i>
-                <input class="search-bar" id="dash-search" placeholder="Search transactions..." oninput="dashFilterTxns(this.value)">
+                <input class="search-bar" id="dash-search" placeholder="Search transactions..." oninput="dashFilterTxns(this.value)" style="border-radius:15px;padding:0.7rem 1rem 0.7rem 2.5rem;">
               </div>
-              <button class="btn-nb btn-nb-primary btn-nb-sm" onclick="openNewAccountModal()"><i class="bi bi-plus-lg"></i></button>
             </div>
           </div>
-          <div class="dash-tabs">${tabs}</div>
 
-          <div class="dash-actions">
-            <button class="dash-icon-action" onclick="navigate('transfers')"><i class="bi bi-arrow-left-right"></i>Transfer</button>
-            <button class="dash-icon-action" onclick="navigate('bills')"><i class="bi bi-receipt"></i>Pay bills</button>
-            <button class="dash-icon-action" onclick="navigate('cards')"><i class="bi bi-credit-card"></i>Cards</button>
-            <button class="dash-icon-action" onclick="navigate('loans')"><i class="bi bi-bank"></i>Loans</button>
-          </div>
-
-          <div class="row g-3 mb-3">
+          <div class="row g-4 mb-4">
             <div class="col-12 col-sm-6">
               <div class="stat-card">
-                <div class="stat-label"><i class="bi bi-wallet2 me-1"></i>Total Balance</div>
+                <div class="stat-label">Total Balance</div>
                 <div class="stat-value">${fmt(totalBal)}</div>
+                <div class="stat-change up"><i class="bi bi-arrow-up-short"></i> 2.5% this month</div>
               </div>
             </div>
             <div class="col-12 col-sm-6">
-              <div class="stat-card gold">
-                <div class="stat-label"><i class="bi bi-bank me-1"></i>Active Accounts</div>
-                <div class="stat-value">${accounts.filter(a=>a.status==='active').length}</div>
+              <div class="stat-card">
+                <div class="stat-label">Active Accounts</div>
+                <div class="stat-value" style="color:var(--nb-accent);">${accounts.filter(a=>a.status==='active').length}</div>
+                <div class="stat-change"><i class="bi bi-info-circle"></i> Managed securely</div>
               </div>
             </div>
+          </div>
+
+          <div class="dash-title-row mt-4 mb-3">
+            <div class="dash-title" style="font-size:1.1rem;">Your Digital Cards</div>
+            <div class="dash-tabs">${tabs}</div>
           </div>
 
           <div class="dash-cards" id="dash-cards">
             ${cardNodes || `<div class="dash-mini" style="display:flex;align-items:center;justify-content:center;min-height:120px;"><div class="text-center" style="color:var(--nb-muted);"><div style="font-weight:800;">No accounts yet</div><div style="font-size:.8rem;margin-top:.25rem;">Open an account to get started.</div></div></div>`}
           </div>
 
-          <div class="dash-analytics">
-            <div class="dash-mini">
-              <h6>Spending by category</h6>
-              <canvas id="dash-spend-chart" height="160"></canvas>
-              <div class="dash-legend" id="dash-legend"></div>
-            </div>
-            <div class="dash-mini">
-              <h6>Income vs expenses</h6>
-              <canvas id="dash-flow-chart" height="160"></canvas>
-              <div style="display:flex;justify-content:space-between;gap:1rem;margin-top:.75rem;font-size:.8rem;color:var(--nb-muted);">
-                <div><span class="dash-dot" style="background:var(--nb-success);"></span>Income</div>
-                <div><span class="dash-dot" style="background:var(--nb-danger);"></span>Expenses</div>
-              </div>
-            </div>
+          <div class="dash-actions mt-4">
+            <button class="dash-icon-action" onclick="navigate('transfers')" style="padding:0.8rem 1.5rem;border-radius:15px;"><i class="bi bi-arrow-left-right"></i>Transfer Funds</button>
+            <button class="dash-icon-action" onclick="navigate('bills')" style="padding:0.8rem 1.5rem;border-radius:15px;"><i class="bi bi-receipt"></i>Pay Bills</button>
+            <button class="dash-icon-action" onclick="navigate('cards')" style="padding:0.8rem 1.5rem;border-radius:15px;"><i class="bi bi-credit-card"></i>Manage Cards</button>
+            <button class="dash-icon-action" onclick="navigate('loans')" style="padding:0.8rem 1.5rem;border-radius:15px;"><i class="bi bi-bank"></i>Request Loan</button>
           </div>
 
-          <div style="margin-top:1.1rem;">
-            <div class="dash-title-row" style="margin-bottom:.6rem;">
-              <div class="dash-title" style="font-size:1rem;">Offers</div>
-              <div class="dash-sub">Personalized for you</div>
+          <div class="dash-analytics mt-4">
+            <div class="dash-mini" style="border-radius:24px;padding:2rem;">
+              <h6 style="font-size:1.1rem;margin-bottom:1.5rem;">Spending by category</h6>
+              <canvas id="dash-spend-chart" height="180"></canvas>
+              <div class="dash-legend" id="dash-legend" style="margin-top:1.5rem;"></div>
             </div>
-            <div class="dash-offers">
-              <div class="offer-card yellow">
-                <div class="t1">Credit</div>
-                <div class="t2">Pre-approved limit check</div>
-              </div>
-              <div class="offer-card teal">
-                <div class="t1">Debit Card</div>
-                <div class="t2">Virtual card in minutes</div>
-              </div>
-              <div class="offer-card violet">
-                <div class="t1">Package</div>
-                <div class="t2">Premium account services</div>
+            <div class="dash-mini" style="border-radius:24px;padding:2rem;">
+              <h6 style="font-size:1.1rem;margin-bottom:1.5rem;">Income vs Expenses</h6>
+              <canvas id="dash-flow-chart" height="180"></canvas>
+              <div style="display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;font-size:.9rem;font-weight:600;">
+                <div><span class="dash-dot" style="background:var(--nb-success);width:12px;height:12px;"></span>Income</div>
+                <div><span class="dash-dot" style="background:var(--nb-danger);width:12px;height:12px;"></span>Expenses</div>
               </div>
             </div>
           </div>
@@ -365,16 +349,27 @@ function renderDashboard(el) {
       </div>
 
       <div>
-        <div class="dash-panel txn-panel">
-          <div class="txn-head">
-            <h6>Transactions</h6>
-            <div class="d-flex align-items-center gap-2">
-              <div class="dash-sub" style="white-space:nowrap;">${monthLabel}</div>
-              <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="navigate('history')">View all</button>
-            </div>
+        <div class="dash-panel txn-panel" style="border-radius:32px;padding:2rem;">
+          <div class="txn-head mb-4">
+            <h6 style="font-size:1.2rem;letter-spacing:-0.5px;">Recent Activity</h6>
+            <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="navigate('history')" style="border-radius:12px;padding:0.4rem 1rem;">View all</button>
           </div>
           <div class="txn-list" id="dash-txn-list">
             ${txnItems || `<div class="empty-state" style="padding:2rem 0;"><i class="bi bi-receipt-cutoff"></i>No transactions</div>`}
+          </div>
+          
+          <div class="mt-5">
+            <h6 style="font-size:1.1rem;margin-bottom:1.25rem;">Exclusive Offers</h6>
+            <div class="d-flex flex-column gap-3">
+              <div class="offer-card yellow" style="border-radius:20px;padding:1.5rem;">
+                <div class="t1" style="font-size:1.2rem;">Premium Credit</div>
+                <div class="t2">0% APR for 12 months on new transfers</div>
+              </div>
+              <div class="offer-card emerald" style="border-radius:20px;padding:1.5rem;">
+                <div class="t1" style="font-size:1.2rem;">Wealth Management</div>
+                <div class="t2">Free consultation with our advisors</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -492,39 +487,39 @@ function dashTxnIcon(t) {
 
 function renderAccounts(el) {
   const accounts = DB.accounts.getByUser(STATE.user.id);
-  const colorClass = ['blue','dark','gold'];
+  const colorClass = ['emerald','dark','gold'];
   const cards = accounts.map((a,i)=>`
     <div class="col-12 col-md-6 col-xl-4">
       <div class="bank-card ${colorClass[i%3]}">
         <div class="card-chip"></div>
         <div style="position:relative;z-index:1;">
-          <div class="card-number mb-3">${a.iban.replace(/(.{4})/g,'$1 ').trim()}</div>
+          <div class="card-number mb-4" style="font-size:1.2rem;letter-spacing:3px;">${a.iban.replace(/(.{4})/g,'$1 ').trim()}</div>
           <div class="d-flex justify-content-between align-items-end">
-            <div><div class="card-name">${STATE.user.name}</div><div style="font-size:.7rem;opacity:.7;">${a.type}</div></div>
-            <div class="text-end"><div style="font-size:1.3rem;font-weight:700;">${fmt(a.balance)}</div><span class="badge-status badge-${a.status}" style="font-size:.65rem;">${a.status}</span></div>
+            <div><div class="card-name" style="font-weight:700;text-transform:uppercase;letter-spacing:1px;">${STATE.user.name}</div><div style="font-size:.75rem;opacity:.8;margin-top:2px;">${a.type}</div></div>
+            <div class="text-end"><div style="font-size:1.5rem;font-weight:800;letter-spacing:-0.5px;">${fmt(a.balance)}</div><span class="badge-status badge-${a.status}" style="font-size:.65rem;text-transform:uppercase;backdrop-filter:blur(5px);background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);">${a.status}</span></div>
           </div>
         </div>
       </div>
-      <div class="nb-card mt-3">
-        <div class="row g-2" style="font-size:.82rem;">
-          <div class="col-6"><div style="color:var(--nb-muted);">IBAN</div><div class="mono" style="font-size:.78rem;">${a.iban}</div></div>
-          <div class="col-6"><div style="color:var(--nb-muted);">SWIFT</div><div class="mono">${a.swift}</div></div>
-          <div class="col-6"><div style="color:var(--nb-muted);">Transfer Limit</div><div class="mono">${fmt(a.limit||0)}/day</div></div>
-          <div class="col-6"><div style="color:var(--nb-muted);">Opened</div><div>${a.createdAt}</div></div>
+      <div class="nb-card mt-3" style="border-radius:24px;padding:1.5rem;">
+        <div class="row g-3" style="font-size:.85rem;">
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">IBAN</div><div class="mono fw-bold" style="font-size:.8rem;">${a.iban}</div></div>
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">SWIFT</div><div class="mono fw-bold">${a.swift}</div></div>
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">Transfer Limit</div><div class="mono fw-bold">${fmt(a.limit||0)}/day</div></div>
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">Opened</div><div class="fw-bold">${a.createdAt}</div></div>
         </div>
-        <hr class="divider">
-        <div class="d-flex gap-2">
-          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="navigate('history')"><i class="bi bi-clock-history"></i> History</button>
-          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="downloadStatement('${a.id}')"><i class="bi bi-download"></i> Statement</button>
-          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="setTransferLimitModal('${a.id}')"><i class="bi bi-sliders"></i> Limit</button>
-          ${a.status==='active'&&a.type!=='Fixed Deposit'?`<button class="btn-nb btn-nb-danger btn-nb-sm" onclick="closeAccountConfirm('${a.id}')"><i class="bi bi-x-circle"></i> Close</button>`:''}
+        <hr class="divider" style="margin:1.25rem 0;">
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="navigate('history')" style="border-radius:10px;"><i class="bi bi-clock-history"></i> History</button>
+          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="downloadStatement('${a.id}')" style="border-radius:10px;"><i class="bi bi-download"></i> Statement</button>
+          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="setTransferLimitModal('${a.id}')" style="border-radius:10px;"><i class="bi bi-sliders"></i> Limit</button>
+          ${a.status==='active'&&a.type!=='Fixed Deposit'?`<button class="btn-nb btn-nb-danger btn-nb-sm" onclick="closeAccountConfirm('${a.id}')" style="border-radius:10px;"><i class="bi bi-x-circle"></i> Close</button>`:''}
         </div>
       </div>
     </div>`).join('');
   el.innerHTML = `
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5 class="mb-0 fw-semibold">My Accounts</h5>
-      <button class="btn-nb btn-nb-primary" onclick="openNewAccountModal()"><i class="bi bi-plus-lg"></i> Open Account</button>
+      <h5 class="mb-0 fw-bold" style="font-size:1.5rem;letter-spacing:-0.5px;">My Accounts</h5>
+      <button class="btn-nb btn-nb-primary" onclick="openNewAccountModal()" style="border-radius:12px;padding:0.6rem 1.25rem;"><i class="bi bi-plus-lg"></i> Open Account</button>
     </div>
     <div class="row g-4">${cards||'<div class="col-12"><div class="empty-state"><i class="bi bi-wallet2"></i>No accounts yet</div></div>'}</div>`;
 }
@@ -667,7 +662,7 @@ async function initiateTransfer() {
   if (Number(fromAcc.limit || 0) > 0 && amount > Number(fromAcc.limit || 0)) return toast(`Amount exceeds your daily transfer limit (${fmt(fromAcc.limit)})`, 'error');
 
   const code = generateOtpCode();
-  const ok = await sendGenericOtp(STATE.user, code, 'transfer', 'Confirm your NexaBank transfer');
+  const ok = await sendGenericOtp(STATE.user, code, 'transfer', 'Confirm your Credit Financials transfer');
   
   // OTP confirm
   showModal('Confirm Transfer', `
@@ -739,31 +734,31 @@ function renderHistory(el) {
     const isDebit = myAccIds.includes(t.fromId) && t.type!=='credit';
     const cleanDesc = sanitizeTxnDesc(t.desc);
     return `<tr>
-      <td><div class="d-flex align-items-center gap-2">
-        <div style="width:36px;height:36px;border-radius:50%;background:${isDebit?'#fee2e2':'#d1fae5'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="bi bi-arrow-${isDebit?'up':'down'}-circle" style="color:${isDebit?'var(--nb-danger)':'var(--nb-success)'};"></i>
+      <td><div class="d-flex align-items-center gap-3">
+        <div style="width:42px;height:42px;border-radius:12px;background:${isDebit?'rgba(220, 38, 38, 0.1)':'rgba(5, 150, 105, 0.1)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="bi bi-arrow-${isDebit?'up':'down'}-right" style="color:${isDebit?'var(--nb-danger)':'var(--nb-success)'};font-size:1.1rem;"></i>
         </div>
-        <div><div style="font-weight:500;">${cleanDesc}</div><div style="font-size:.75rem;color:var(--nb-muted);">${t.category}</div></div>
+        <div><div style="font-weight:700;font-size:0.95rem;">${cleanDesc}</div><div style="font-size:.8rem;color:var(--nb-muted);">${t.category}</div></div>
       </div></td>
-      <td style="font-size:.78rem;color:var(--nb-muted);">${fmtDate(t.ts)}</td>
-      <td><span class="${isDebit?'amount-neg':'amount-pos'}">${isDebit?'-':'+'}${fmt(t.amount)}</span></td>
-      <td><span class="badge-status badge-${t.status}">${t.status}</span></td>
-      <td><button class="btn-nb btn-nb-outline btn-nb-sm" onclick="viewTxn('${t.id}')"><i class="bi bi-eye"></i></button></td>
+      <td style="font-size:.85rem;color:var(--nb-muted);">${fmtDate(t.ts)}</td>
+      <td><span class="${isDebit?'amount-neg':'amount-pos'}" style="font-weight:800;font-size:1rem;">${isDebit?'-':'+'}${fmt(t.amount)}</span></td>
+      <td><span class="badge-status badge-${t.status}" style="text-transform:uppercase;font-size:0.65rem;">${t.status}</span></td>
+      <td><button class="btn-nb btn-nb-outline btn-nb-sm" onclick="viewTxn('${t.id}')" style="border-radius:8px;"><i class="bi bi-eye"></i></button></td>
     </tr>`;}).join('');
   el.innerHTML = `
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-sm-6"><div class="stat-card green"><div class="stat-label"><i class="bi bi-arrow-down-circle me-1"></i>Total Income</div><div class="stat-value">${fmt(income)}</div></div></div>
-      <div class="col-12 col-sm-6"><div class="stat-card red"><div class="stat-label"><i class="bi bi-arrow-up-circle me-1"></i>Total Expenses</div><div class="stat-value">${fmt(expenses)}</div></div></div>
+    <div class="row g-4 mb-4">
+      <div class="col-12 col-sm-6"><div class="stat-card" style="border-left:4px solid var(--nb-success);"><div class="stat-label">Total Income</div><div class="stat-value" style="color:var(--nb-success);">${fmt(income)}</div></div></div>
+      <div class="col-12 col-sm-6"><div class="stat-card" style="border-left:4px solid var(--nb-danger);"><div class="stat-label">Total Expenses</div><div class="stat-value" style="color:var(--nb-danger);">${fmt(expenses)}</div></div></div>
     </div>
-    <div class="nb-card">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <h6 class="mb-0 fw-semibold">All Transactions</h6>
+    <div class="nb-card" style="border-radius:32px;padding:2.5rem;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-4 mb-4">
+        <h6 class="mb-0 fw-bold" style="font-size:1.3rem;letter-spacing:-0.5px;">Transaction History</h6>
         <div class="d-flex gap-2 flex-wrap">
-          <div class="search-wrap"><i class="bi bi-search"></i><input class="search-bar" placeholder="Search..." oninput="filterTxns(this.value)" style="width:200px;"></div>
-          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="exportTxns()"><i class="bi bi-download"></i> Export</button>
+          <div class="search-wrap"><i class="bi bi-search"></i><input class="search-bar" placeholder="Search transactions..." oninput="filterTxns(this.value)" style="width:250px;border-radius:12px;"></div>
+          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="exportTxns()" style="border-radius:10px;padding:0.5rem 1rem;"><i class="bi bi-download"></i> Export CSV</button>
         </div>
       </div>
-      <div style="overflow-x:auto;"><table class="nb-table" id="txn-table"><thead><tr><th>Description</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="text-center text-muted py-4">No transactions</td></tr>'}</tbody></table></div>
+      <div style="overflow-x:auto;"><table class="nb-table" id="txn-table"><thead><tr><th>Description</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="text-center text-muted py-5" style="font-size:1.1rem;"><i class="bi bi-receipt-cutoff d-block mb-2" style="font-size:2.5rem;opacity:0.3;"></i>No transactions found</td></tr>'}</tbody></table></div>
     </div>`;
 }
 function viewTxn(id) {
@@ -794,47 +789,47 @@ function exportTxns() {
 
 function renderCards(el) {
   const cards = DB.cards.getByUser(STATE.user.id).map(nbEnsureCardSecrets);
-  const colorClass = ['blue','dark','gold'];
+  const colorClass = ['emerald','dark','gold'];
   const cardHtml = cards.map((c,i)=>`
     <div class="col-12 col-md-6">
       <div class="bank-card ${colorClass[i%3]} mb-3">
         <div class="card-chip"></div>
         <div style="position:relative;z-index:1;">
-          <div class="card-number mb-2">${nbMaskPan(c.number || c.maskedNumber)}</div>
+          <div class="card-number mb-4" style="font-size:1.4rem;letter-spacing:4px;">${nbMaskPan(c.number || c.maskedNumber)}</div>
           <div class="d-flex justify-content-between align-items-end">
-            <div><div class="card-name">${c.holderName || STATE.user.name}</div><div style="font-size:.7rem;opacity:.7;">VALID THRU ${c.expiry}</div></div>
-            <div class="text-end"><div style="font-weight:700;font-size:1.1rem;">${c.type}</div><span class="badge-status badge-${c.status}" style="font-size:.65rem;">${c.status}</span></div>
+            <div><div class="card-name" style="font-weight:700;text-transform:uppercase;letter-spacing:1px;">${c.holderName || STATE.user.name}</div><div style="font-size:.75rem;opacity:.8;margin-top:2px;">VALID THRU ${c.expiry}</div></div>
+            <div class="text-end"><div style="font-weight:800;font-size:1.3rem;letter-spacing:-0.5px;">${c.type}</div><span class="badge-status badge-${c.status}" style="font-size:.65rem;text-transform:uppercase;backdrop-filter:blur(5px);background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);">${c.status}</span></div>
           </div>
         </div>
       </div>
-      <div class="nb-card">
+      <div class="nb-card" style="border-radius:24px;padding:1.5rem;">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div style="font-weight:700;">Card details</div>
-          <button class="btn-nb btn-nb-outline btn-nb-sm" id="card-secrets-btn-${c.id}" onclick="toggleCardSecrets('${c.id}')"><i class="bi bi-eye"></i> Show details</button>
+          <div style="font-weight:700;font-size:1rem;">Card Details</div>
+          <button class="btn-nb btn-nb-outline btn-nb-sm" id="card-secrets-btn-${c.id}" onclick="toggleCardSecrets('${c.id}')" style="border-radius:10px;"><i class="bi bi-eye"></i> Show Details</button>
         </div>
-        <div id="card-secrets-${c.id}" data-open="0" class="row g-2 mb-3" style="font-size:.82rem;">
-          <div class="col-12"><div style="color:var(--nb-muted);">Card Number</div><div class="mono fw-bold" id="card-num-${c.id}">${nbMaskPan(c.number)}</div></div>
-          <div class="col-6"><div style="color:var(--nb-muted);">CVV</div><div class="mono fw-bold" id="card-cvv-${c.id}">•••</div></div>
-          <div class="col-6"><div style="color:var(--nb-muted);">Expiry</div><div class="mono fw-bold">${c.expiry}</div></div>
-          <div class="col-12"><div style="color:var(--nb-muted);">Cardholder</div><div class="mono fw-bold">${c.holderName || STATE.user.name}</div></div>
+        <div id="card-secrets-${c.id}" data-open="0" class="row g-3 mb-3" style="font-size:.85rem;">
+          <div class="col-12"><div style="color:var(--nb-muted);margin-bottom:2px;">Card Number</div><div class="mono fw-bold" id="card-num-${c.id}">${nbMaskPan(c.number)}</div></div>
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">CVV</div><div class="mono fw-bold" id="card-cvv-${c.id}">•••</div></div>
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">Expiry</div><div class="mono fw-bold">${c.expiry}</div></div>
+          <div class="col-12"><div style="color:var(--nb-muted);margin-bottom:2px;">Cardholder</div><div class="mono fw-bold">${c.holderName || STATE.user.name}</div></div>
         </div>
-        <div class="row g-2 mb-3" style="font-size:.82rem;">
-          <div class="col-6"><div style="color:var(--nb-muted);">Daily Limit</div><div class="mono fw-bold">${fmt(c.dailyLimit)}</div></div>
-          <div class="col-6"><div style="color:var(--nb-muted);">Monthly Limit</div><div class="mono fw-bold">${fmt(c.monthlyLimit)}</div></div>
-          ${c.creditLimit?`<div class="col-6"><div style="color:var(--nb-muted);">Credit Limit</div><div class="mono">${fmt(c.creditLimit)}</div></div><div class="col-6"><div style="color:var(--nb-muted);">Used</div><div class="mono">${fmt(c.used||0)}</div></div>`:''}
+        <div class="row g-3 mb-3" style="font-size:.85rem;">
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">Daily Limit</div><div class="mono fw-bold">${fmt(c.dailyLimit)}</div></div>
+          <div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">Monthly Limit</div><div class="mono fw-bold">${fmt(c.monthlyLimit)}</div></div>
+          ${c.creditLimit?`<div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">Credit Limit</div><div class="mono fw-bold">${fmt(c.creditLimit)}</div></div><div class="col-6"><div style="color:var(--nb-muted);margin-bottom:2px;">Used</div><div class="mono fw-bold">${fmt(c.used||0)}</div></div>`:''}
         </div>
-        ${c.creditLimit?`<div class="loan-progress"><div style="font-size:.75rem;color:var(--nb-muted);margin-bottom:.3rem;">Utilization ${Math.round((c.used/c.creditLimit)*100)}%</div><div class="progress-bar-custom"><div class="progress-fill" style="width:${Math.round((c.used/c.creditLimit)*100)}%;"></div></div></div>`:''}
-        <div class="d-flex gap-2 flex-wrap mt-2">
-          <button class="btn-nb ${c.status==='active'?'btn-nb-outline':'btn-nb-success'} btn-nb-sm" onclick="toggleCard('${c.id}')"><i class="bi bi-${c.status==='active'?'snow':'check2'}"></i> ${c.status==='active'?'Freeze':'Unfreeze'}</button>
-          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="setCardLimitModal('${c.id}')"><i class="bi bi-sliders"></i> Limits</button>
-          <button class="btn-nb btn-nb-danger btn-nb-sm" onclick="reportCard('${c.id}')"><i class="bi bi-flag"></i> Report Lost</button>
+        ${c.creditLimit?`<div class="loan-progress mb-3"><div style="font-size:.75rem;color:var(--nb-muted);margin-bottom:.5rem;">Utilization ${Math.round((c.used/c.creditLimit)*100)}%</div><div class="progress-bar-custom"><div class="progress-fill" style="width:${Math.round((c.used/c.creditLimit)*100)}%;"></div></div></div>`:''}
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <button class="btn-nb ${c.status==='active'?'btn-nb-outline':'btn-nb-success'} btn-nb-sm" onclick="toggleCard('${c.id}')" style="border-radius:10px;"><i class="bi bi-${c.status==='active'?'snow':'check2'}"></i> ${c.status==='active'?'Freeze':'Unfreeze'}</button>
+          <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="setCardLimitModal('${c.id}')" style="border-radius:10px;"><i class="bi bi-sliders"></i> Limits</button>
+          <button class="btn-nb btn-nb-danger btn-nb-sm" onclick="reportCard('${c.id}')" style="border-radius:10px;"><i class="bi bi-flag"></i> Report Lost</button>
         </div>
       </div>
     </div>`).join('');
   el.innerHTML = `
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5 class="mb-0 fw-semibold">My Cards</h5>
-      <button class="btn-nb btn-nb-primary" onclick="requestCardModal()"><i class="bi bi-plus-lg"></i> Request Card</button>
+      <h5 class="mb-0 fw-bold" style="font-size:1.5rem;letter-spacing:-0.5px;">My Cards</h5>
+      <button class="btn-nb btn-nb-primary" onclick="requestCardModal()" style="border-radius:12px;padding:0.6rem 1.25rem;"><i class="bi bi-plus-lg"></i> Request Card</button>
     </div>
     <div class="row g-4">${cardHtml||'<div class="col"><div class="empty-state"><i class="bi bi-credit-card-2-front"></i>No cards</div></div>'}</div>`;
 }
