@@ -70,6 +70,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
 
+    .main-nav { display: flex; }
     .nav-item-wrapper { position: relative; padding: 10px 0; }
     .nav-link-custom { 
       font-weight: 700; 
@@ -390,8 +391,17 @@
       z-index: 1100;
     }
     .scrolled .mobile-nav-toggle { color: var(--nb-text); }
+    .mobile-nav-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1040;
+    }
     
     @media (max-width: 991px) {
+      body.mobile-nav-open { overflow: hidden; }
       .mobile-nav-toggle { display: block; }
       .main-nav {
         position: fixed;
@@ -409,6 +419,7 @@
         z-index: 1050;
       }
       .main-nav.active { right: 0; }
+      .mobile-nav-backdrop.active { display: block; }
       .nav-link-custom { color: var(--nb-text) !important; font-size: 18px; width: 100%; padding: 15px 0; border-bottom: 1px solid var(--nb-border); }
       .nav-preview { display: none !important; }
     }
@@ -541,9 +552,9 @@
         <span class="h4 mb-0 fw-bolder text-white brand-text">Credit<span style="color:#10b981;">Financials</span></span>
       </a>
       
-      <nav class="d-none d-lg-flex align-items-center gap-4 main-nav">
+      <nav class="align-items-center gap-4 main-nav">
         <div class="nav-item-wrapper">
-          <a href="#about" class="nav-link-custom">About</a>
+          <a href="#about" class="nav-link-custom" onclick="toggleMobileNav(false)">About</a>
         </div>
         <div class="nav-item-wrapper">
           <a href="#" class="nav-link-custom">Personal</a>
@@ -616,7 +627,7 @@
         <button class="btn border-0 p-2 me-2" onclick="toggleTheme()" id="theme-toggle">
           <i class="bi bi-moon-stars-fill text-white fs-5" id="theme-icon"></i>
         </button>
-        <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;">Online Portal</a>
+        <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;" onclick="toggleMobileNav(false)">Online Portal</a>
       </nav>
       
       <button class="mobile-nav-toggle" onclick="toggleMobileNav()">
@@ -624,6 +635,7 @@
       </button>
     </div>
   </header>
+  <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" onclick="toggleMobileNav(false)"></div>
 
   <section class="hero-engine">
     <div class="hero-bg-image" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2000')"></div>
@@ -1142,12 +1154,21 @@
       document.querySelectorAll('section > div').forEach(el => observer.observe(el));
 
       // Mobile Nav Toggle
-      window.toggleMobileNav = () => {
-        document.querySelector('.main-nav').classList.toggle('active');
+      window.toggleMobileNav = (force) => {
+        const nav = document.querySelector('.main-nav');
         const icon = document.querySelector('.mobile-nav-toggle i');
-        icon.classList.toggle('bi-list');
-        icon.classList.toggle('bi-x');
+        const backdrop = document.getElementById('mobile-nav-backdrop');
+        if (!nav || !icon || !backdrop) return;
+        const open = force !== undefined ? !!force : !nav.classList.contains('active');
+        nav.classList.toggle('active', open);
+        backdrop.classList.toggle('active', open);
+        document.body.classList.toggle('mobile-nav-open', open);
+        icon.classList.toggle('bi-list', !open);
+        icon.classList.toggle('bi-x', open);
       };
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 991) window.toggleMobileNav(false);
+      });
 
       // Stats Slideshow Logic
       (function() {

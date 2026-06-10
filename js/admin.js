@@ -5,6 +5,82 @@ function adminGuard(el) {
   return true;
 }
 
+function adminEscapeHtml(v) {
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function adminDocLabel(v) {
+  const labels = {
+    drivers_license: "Driver's License",
+    passport: 'Passport',
+    national_id: 'National ID Card',
+    utility_bill: 'Utility Bill',
+    bank_statement: 'Bank Statement',
+    tax_letter: 'Tax Letter'
+  };
+  return labels[v] || String(v || '—').replace(/_/g, ' ');
+}
+
+function adminFullAddress(u) {
+  return [u.address, u.city, u.state, u.zip, u.country].filter(Boolean).join(', ') || '—';
+}
+
+function adminViewUser(id) {
+  const u = DB.users.getById(id);
+  if (!u) return toast('User not found', 'error');
+  const accounts = DB.accounts.getByUser(u.id);
+  const kyc = u.kycData || null;
+  const accountRows = accounts.length
+    ? accounts.map(a => `
+      <div class="d-flex justify-content-between py-2 border-bottom" style="font-size:.85rem;">
+        <span>${adminEscapeHtml(a.type)} <span class="mono" style="font-size:.75rem;color:var(--nb-muted);">${adminEscapeHtml(a.iban || a.id)}</span></span>
+        <span class="mono fw-bold">${fmt(a.balance)}</span>
+      </div>`).join('')
+    : `<div style="font-size:.82rem;color:var(--nb-muted);">No accounts found.</div>`;
+
+  showModal('User Details: ' + adminEscapeHtml(u.name), `
+    <div style="font-size:.88rem;">
+      <div class="mb-3 pb-3 border-bottom">
+        <div style="font-weight:800;font-size:1rem;">Registration Details</div>
+        <div style="font-size:.78rem;color:var(--nb-muted);">Full customer profile visible to admin staff.</div>
+      </div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Full Name</span><span>${adminEscapeHtml(u.name)}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Email</span><span>${adminEscapeHtml(u.email)}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Role</span><span>${adminEscapeHtml(u.role || 'customer')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Status</span><span>${adminEscapeHtml(u.status || 'active')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Phone</span><span>${adminEscapeHtml(u.phone || '—')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Date of Birth</span><span>${adminEscapeHtml(u.dob || '—')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">SSN</span><span class="mono">${adminEscapeHtml(u.ssn || '—')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Address</span><span style="text-align:right;max-width:65%;">${adminEscapeHtml(adminFullAddress(u))}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Joined</span><span>${adminEscapeHtml(u.joined || '—')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Access Code</span><span class="mono">${adminEscapeHtml(u.accessCode || '—')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Transfer Code</span><span>${u.transferVerificationCode ? 'Set by user' : 'Not set'}</span></div>
+      <div class="mt-3 mb-2" style="font-weight:700;">Accounts</div>
+      <div class="mb-3">${accountRows}</div>
+      <div class="mt-3 mb-2" style="font-weight:700;">KYC Summary</div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">KYC Status</span><span>${adminEscapeHtml(u.kycStatus || 'unverified')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">ID Type</span><span>${adminEscapeHtml(adminDocLabel(kyc?.type))}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Document Number</span><span class="mono">${adminEscapeHtml(kyc?.num || '—')}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Proof of Address</span><span>${adminEscapeHtml(adminDocLabel(kyc?.proofType || '—'))}</span></div>
+      <div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">Submitted</span><span>${kyc?.submittedAt ? fmtDate(kyc.submittedAt) : '—'}</span></div>
+      ${u.kycReason ? `<div class="d-flex justify-content-between py-2 border-bottom"><span style="color:var(--nb-muted);">KYC Reason</span><span style="text-align:right;max-width:65%;">${adminEscapeHtml(u.kycReason)}</span></div>` : ''}
+      ${kyc?.front ? `<div class="mt-3"><label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.35rem;">Government ID</label><img src="${kyc.front}" style="width:100%;border-radius:8px;border:1px solid var(--nb-border);"></div>` : ''}
+      ${(kyc?.proofOfAddress || kyc?.back) ? `<div class="mt-3"><label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.35rem;">Proof of Address</label><img src="${kyc.proofOfAddress || kyc.back}" style="width:100%;border-radius:8px;border:1px solid var(--nb-border);"></div>` : ''}
+      ${kyc?.selfie ? `<div class="mt-3"><label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.35rem;">Selfie</label><img src="${kyc.selfie}" style="width:100%;max-height:260px;object-fit:contain;border-radius:8px;border:1px solid var(--nb-border);"></div>` : ''}
+    </div>`,
+    `<div class="d-flex gap-2 justify-content-end">
+      <button class="btn-nb btn-nb-outline" onclick="closeModal()">Close</button>
+      ${kyc ? `<button class="btn-nb btn-nb-outline" onclick="closeModal(); adminViewKYC('${u.id}')"><i class="bi bi-shield-check"></i> Review KYC</button>` : ''}
+      <button class="btn-nb btn-nb-primary" onclick="closeModal(); adminEditUser('${u.id}')"><i class="bi bi-pencil"></i> Edit User</button>
+    </div>`
+  );
+}
+
 function renderAdminDashboard(el) {
   if (!adminGuard(el)) return;
   const users = DB.users.getAll();
@@ -75,6 +151,7 @@ function renderAdminUsers(el) {
     <td><span class="badge-status badge-${u.status}">${u.status}</span></td>
     <td>
       <div class="d-flex gap-1">
+        <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="adminViewUser('${u.id}')" title="View Details"><i class="bi bi-eye"></i></button>
         <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="adminEditUser('${u.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
         <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="adminResetPassword('${u.id}')" title="Reset Password"><i class="bi bi-key"></i></button>
         ${(u.failedLogins||0)>=5?`<button class="btn-nb btn-nb-outline btn-nb-sm" onclick="adminUnlockUser('${u.id}')" title="Unlock"><i class="bi bi-unlock"></i></button>`:''}
@@ -290,7 +367,7 @@ function renderAdminKYC(el) {
   const rows = users.map(u => `
     <tr>
       <td><div style="font-weight:500;">${u.name}</div><div style="font-size:.72rem;color:var(--nb-muted);">${u.email}</div></td>
-      <td>${u.kycData?.type?.toUpperCase().replace('_', ' ') || '—'}</td>
+      <td>${adminDocLabel(u.kycData?.type || '—')}</td>
       <td>${u.kycData?.num || '—'}</td>
       <td>${fmtDate(u.kycData?.submittedAt)}</td>
       <td>
@@ -318,19 +395,20 @@ function adminViewKYC(userId) {
   showModal('Review KYC: ' + u.name, `
     <div class="row g-3">
       <div class="col-12">
-        <div style="font-size:.85rem;color:var(--nb-muted);">Document Type: <strong>${data.type}</strong></div>
+        <div style="font-size:.85rem;color:var(--nb-muted);">Document Type: <strong>${adminDocLabel(data.type)}</strong></div>
         <div style="font-size:.85rem;color:var(--nb-muted);">Document Number: <strong>${data.num}</strong></div>
+        <div style="font-size:.85rem;color:var(--nb-muted);">Proof of Address: <strong>${adminDocLabel(data.proofType || '—')}</strong></div>
       </div>
       <div class="col-md-6">
-        <label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.25rem;">Front of ID</label>
+        <label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.25rem;">Government ID</label>
         <img src="${data.front}" style="width:100%;border-radius:8px;border:1px solid var(--nb-border);">
       </div>
       <div class="col-md-6">
-        <label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.25rem;">Back of ID</label>
-        ${data.back ? `<img src="${data.back}" style="width:100%;border-radius:8px;border:1px solid var(--nb-border);">` : `<div style="padding:1rem;background:var(--nb-bg);text-align:center;border-radius:8px;font-size:.75rem;color:var(--nb-muted);">Not provided</div>`}
+        <label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.25rem;">Proof of Address</label>
+        ${(data.proofOfAddress || data.back) ? `<img src="${data.proofOfAddress || data.back}" style="width:100%;border-radius:8px;border:1px solid var(--nb-border);">` : `<div style="padding:1rem;background:var(--nb-bg);text-align:center;border-radius:8px;font-size:.75rem;color:var(--nb-muted);">Not provided</div>`}
       </div>
       <div class="col-12">
-        <label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.25rem;">Selfie with ID</label>
+        <label style="font-size:.75rem;font-weight:700;display:block;margin-bottom:.25rem;">Selfie</label>
         <img src="${data.selfie}" style="width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid var(--nb-border);">
       </div>
       <div class="col-12">

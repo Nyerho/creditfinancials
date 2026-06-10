@@ -587,6 +587,7 @@ function renderTransfers(el) {
   const accounts = DB.accounts.getByUser(STATE.user.id).filter(a=>a.status==='active');
   const payees = DB.payees.getByUser(STATE.user.id);
   const fromOpts = accounts.map(a=>`<option value="${a.id}">${a.type} — ${fmt(a.balance)}</option>`).join('');
+  const hasTransferCode = !!STATE.user.transferVerificationCode;
   el.innerHTML = `
     <div class="row g-4">
       <div class="col-12 col-lg-7">
@@ -625,6 +626,21 @@ function renderTransfers(el) {
       <div class="col-12 col-lg-5">
         <div class="nb-card mb-3">
           <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0 fw-semibold">Transfer Security</h6>
+            <span class="badge-status ${hasTransferCode ? 'badge-active' : 'badge-pending'}">${hasTransferCode ? 'Code active' : 'Setup needed'}</span>
+          </div>
+          <p style="font-size:.84rem;color:var(--nb-muted);margin-bottom:1rem;">Use your private transfer confirmation code to approve transfers instantly without waiting for email OTP.</p>
+          <div class="form-group">
+            <label>${hasTransferCode ? 'Change confirmation code' : 'Create confirmation code'}</label>
+            <div class="d-flex gap-2">
+              <input class="nb-input" id="t-transfer-code" type="password" placeholder="${hasTransferCode ? 'Enter a new code' : 'Create a code'}">
+              <button class="btn-nb btn-nb-outline" onclick="togglePwInput('t-transfer-code', this)" title="Show/Hide"><i class="bi bi-eye"></i></button>
+            </div>
+          </div>
+          <button class="btn-nb btn-nb-primary w-100 justify-content-center" onclick="saveTransferCodeFromTransfers()"><i class="bi bi-shield-lock"></i> Save Confirmation Code</button>
+        </div>
+        <div class="nb-card mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="mb-0 fw-semibold">Saved Payees</h6>
             <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="addPayeeModal()"><i class="bi bi-plus"></i> Add</button>
           </div>
@@ -651,6 +667,69 @@ function switchTransferTab(btn, mode) {
   document.getElementById('transfer-to-external').style.display = mode==='external'?'block':'none';
   document.getElementById('transfer-to-intl').style.display = mode==='international'?'block':'none';
 }
+
+function saveTransferCodeFromInput(inputId) {
+  const code = document.getElementById(inputId)?.value.trim();
+  if (!code || code.length < 4) {
+    toast('Verification code must be at least 4 characters long', 'error');
+    return false;
+  }
+  DB.users.update(STATE.user.id, { transferVerificationCode: code });
+  STATE.user = DB.users.getById(STATE.user.id);
+  toast('Transfer verification code saved successfully!', 'success');
+  return true;
+}
+
+function saveTransferCodeFromTransfers() {
+  const ok = saveTransferCodeFromInput('t-transfer-code');
+  if (ok && STATE.page === 'transfers') navigate('transfers');
+}
+
+function buildTransferDraft(fromId) {
+  if (transferMode === 'internal') {
+    const toId = document.getElementById('t-to-internal')?.value;
+    if (!toId) return { ok: false, msg: 'Select the destination account' };
+    if (toId === fromId) return { ok: false, msg: 'Choose a different destination account' };
+    const toAcc = DB.accounts.getById(toId);
+    if (!toAcc) return { ok: false, msg: 'Destination account not found' };
+    return {
+      ok: true,
+      mode: 'internal',
+      toId,
+      summary: `${toAcc.type} account`,
+      meta: { accountType: toAcc.type, iban: toAcc.iban || toAcc.id }
+    };
+  }
+
+  if (transferMode === 'external') {
+    const iban = document.getElementById('t-to-iban')?.value.trim();
+    const name = document.getElementById('t-to-name')?.value.trim();
+    const bank = document.getElementById('t-to-bank')?.value.trim() || 'External bank';
+    if (!iban || !name) return { ok: false, msg: 'Enter the recipient account and name' };
+    return {
+      ok: true,
+      mode: 'external',
+      toId: null,
+      summary: `${name} • ${bank}`,
+      meta: { name, bank, iban }
+    };
+  }
+
+  const swift = document.getElementById('t-swift')?.value.trim();
+  const iban = document.getElementById('t-intl-iban')?.value.trim();
+  const name = document.getElementById('t-intl-name')?.value.trim();
+  const country = document.getElementById('t-intl-country')?.value.trim();
+  if (!swift || !iban || !name || !country) {
+    return { ok: false, msg: 'Complete the international beneficiary details' };
+  }
+  return {
+    ok: true,
+    mode: 'international',
+    toId: null,
+    summary: `${name} • ${country}`,
+    meta: { name, country, iban, swift }
+  };
+}
 async function initiateTransfer() {
   const amount = parseFloat(document.getElementById('t-amount').value);
   const fromId = document.getElementById('t-from').value;
@@ -661,45 +740,68 @@ async function initiateTransfer() {
   if (fromAcc.balance < amount) return toast('Insufficient funds', 'error');
   if (Number(fromAcc.limit || 0) > 0 && amount > Number(fromAcc.limit || 0)) return toast(`Amount exceeds your daily transfer limit (${fmt(fromAcc.limit)})`, 'error');
 
-  const code = generateOtpCode();
-  const ok = await sendGenericOtp(STATE.user, code, 'transfer', 'Confirm your Credit Financials transfer');
+  if (!STATE.user.transferVerificationCode) {
+    toast('Please create a transfer verification code first.', 'warning');
+    const codeInput = document.getElementById('t-transfer-code');
+    if (codeInput) codeInput.focus();
+    return;
+  }
+
+  const draft = buildTransferDraft(fromId);
+  if (!draft.ok) return toast(draft.msg, 'error');
+  window.__nbPendingTransfer = { fromId, amount, desc, currency, ...draft };
   
-  // OTP confirm
+  // Confirm transfer with user's verification code
   showModal('Confirm Transfer', `
     <div style="text-align:center;padding:1rem 0;">
       <div style="font-size:2rem;font-weight:700;color:var(--nb-accent);">${currency} ${fmt(amount)}</div>
       <div style="color:var(--nb-muted);margin:.5rem 0;">${desc}</div>
-      <p style="font-size:.85rem;">Enter the verification code sent to your email:</p>
-      <input class="nb-input" id="otp-input" placeholder="6-digit code" style="max-width:200px;margin:0 auto;text-align:center;font-size:1.2rem;letter-spacing:4px;" maxlength="6">
-      ${!ok ? `<p style="font-size:.78rem;color:var(--nb-danger);margin-top:.5rem;">Email service unavailable. Use fallback: <strong>${code}</strong></p>` : `<p style="font-size:.78rem;color:var(--nb-muted);margin-top:.5rem;">Code expires in 10 minutes.</p>`}
+      <div style="font-size:.82rem;color:var(--nb-muted);margin-bottom:1rem;">Beneficiary: ${draft.summary}</div>
+      <p style="font-size:.85rem;">Enter your transfer verification code:</p>
+      <input class="nb-input" id="otp-input" placeholder="Enter your verification code" style="max-width:200px;margin:0 auto;text-align:center;font-size:1.2rem;letter-spacing:4px;" type="password">
     </div>`,
-    `<div class="d-flex gap-2 justify-content-end"><button class="btn-nb btn-nb-outline" onclick="closeModal()">Cancel</button><button class="btn-nb btn-nb-primary" onclick="runLocked(this, () => confirmTransfer('${fromId}',${amount},'${desc}','${!ok?code:''}'), 'Confirming...')"><i class="bi bi-check2"></i> Confirm</button></div>`
+    `<div class="d-flex gap-2 justify-content-end"><button class="btn-nb btn-nb-outline" onclick="closeModal()">Cancel</button><button class="btn-nb btn-nb-primary" onclick="runLocked(this, () => confirmTransfer(), 'Confirming...')"><i class="bi bi-check2"></i> Confirm</button></div>`
   );
 }
-async function confirmTransfer(fromId, amount, desc, fallbackCode) {
-  const otp = document.getElementById('otp-input').value;
-  if (fallbackCode) {
-    if (otp !== fallbackCode) return toast('Invalid verification code', 'error');
-  } else {
-    const res = await verifyGenericOtp(STATE.user.id, otp);
-    if (!res.ok) return toast(res.msg, 'error');
-  }
+async function confirmTransfer() {
+  const otp = document.getElementById('otp-input')?.value.trim();
+  if (otp !== STATE.user.transferVerificationCode) return toast('Invalid verification code', 'error');
 
+  const pending = window.__nbPendingTransfer;
+  if (!pending?.fromId || !pending?.amount) return toast('Transfer session expired. Please review the transfer again.', 'error');
+
+  const { fromId, amount, desc, toId, mode, meta, summary } = pending;
   const fromAcc = DB.accounts.getById(fromId);
+  if (!fromAcc) return toast('Source account not found', 'error');
+  if (fromAcc.balance < amount) return toast('Insufficient funds', 'error');
   DB.accounts.update(fromId, { balance: fromAcc.balance - amount });
   sendTransactionAlert(STATE.user.id, 'debit', amount, desc);
 
-  let toId = null;
-  if (transferMode === 'internal') {
-    toId = document.getElementById('t-to-internal')?.value;
+  if (mode === 'internal') {
     if (toId) {
       const toAcc = DB.accounts.getById(toId);
-      DB.accounts.update(toId, { balance: toAcc.balance + amount });
-      sendTransactionAlert(toAcc.userId, 'credit', amount, desc);
+      if (toAcc) {
+        DB.accounts.update(toId, { balance: toAcc.balance + amount });
+        sendTransactionAlert(toAcc.userId, 'credit', amount, desc);
+      }
     }
   }
-  DB.transactions.create({ id:'t'+uid(), fromId, toId, amount, type:'transfer', category:'Transfer', desc, status:'completed', ts:new Date().toISOString() });
+  DB.transactions.create({
+    id:'t'+uid(),
+    fromId,
+    toId,
+    amount,
+    type:'transfer',
+    category:'Transfer',
+    desc,
+    status:'completed',
+    ts:new Date().toISOString(),
+    transferMode: mode,
+    beneficiarySummary: summary,
+    beneficiaryMeta: meta
+  });
   DB.notifications.add({ id:'n'+uid(), userId:STATE.user.id, message:`Transfer of ${fmt(amount)} was successful.`, type:'success', read:false, ts:new Date().toISOString() });
+  window.__nbPendingTransfer = null;
   toast('Transfer successful!', 'success');
   closeModal();
   navigate('history');
@@ -1175,9 +1277,33 @@ function renderProfile(el) {
             <div class="col-md-6 form-group"><label>Email</label><input class="nb-input" id="p-email" value="${u.email}" type="email"></div>
             <div class="col-md-6 form-group"><label>Phone</label><input class="nb-input" id="p-phone" value="${u.phone||''}"></div>
             <div class="col-md-6 form-group"><label>Date of Birth</label><input class="nb-input" id="p-dob" value="${u.dob||''}" type="date"></div>
-            <div class="col-12 form-group"><label>Address</label><input class="nb-input" id="p-addr" value="${u.address||''}"></div>
+            <div class="col-md-6 form-group"><label>SSN</label><input class="nb-input" id="p-ssn" value="${u.ssn||''}" placeholder="123-45-6789" inputmode="numeric"></div>
+            <div class="col-md-6 form-group"><label>Address</label><input class="nb-input" id="p-address" value="${u.address||''}"></div>
+            <div class="col-md-6 form-group"><label>City</label><input class="nb-input" id="p-city" value="${u.city||''}"></div>
+            <div class="col-md-6 form-group"><label>State/Region</label><input class="nb-input" id="p-state" value="${u.state||''}"></div>
+            <div class="col-md-6 form-group"><label>Postal Code</label><input class="nb-input" id="p-zip" value="${u.zip||''}"></div>
+            <div class="col-md-6 form-group"><label>Country</label><input class="nb-input" id="p-country" value="${u.country||''}"></div>
           </div>
           <button class="btn-nb btn-nb-primary mt-2" onclick="saveProfile()"><i class="bi bi-check2"></i> Save Changes</button>
+        </div>
+        <div class="nb-card mb-3">
+          <h6 class="fw-semibold mb-3">Transfer Verification Code</h6>
+          <p style="font-size:.85rem;color:var(--nb-muted);margin-bottom:1rem;">This code is used to verify your transfers instead of an email OTP.</p>
+          <div class="row g-3">
+            <div class="col-md-6 form-group">
+              <label>Verification Code</label>
+              <input class="nb-input" id="p-transfer-code" type="password" placeholder="Enter or create your code">
+            </div>
+            <div class="col-md-6 form-group">
+              <label>&nbsp;</label>
+              <div class="d-flex gap-2">
+                <button class="btn-nb btn-nb-outline w-100" onclick="togglePwInput('p-transfer-code', this)" title="Show/Hide">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn-nb btn-nb-primary w-100" onclick="saveTransferCode()"><i class="bi bi-key"></i> Save Code</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="nb-card">
           <h6 class="fw-semibold mb-3">Change Password</h6>
@@ -1190,6 +1316,10 @@ function renderProfile(el) {
         </div>
       </div>
     </div>`;
+}
+
+function saveTransferCode() {
+  saveTransferCodeFromInput('p-transfer-code');
 }
 
 async function resendVerificationFromDashboard() {
@@ -1304,7 +1434,7 @@ function renderKYC(el) {
       <i class="bi bi-shield-lock fs-3"></i>
       <div>
         <h6 class="mb-0 fw-bold">KYC Required</h6>
-        <div style="font-size:.85rem;">To ensure the security of your account and comply with regulations, please verify your identity.</div>
+        <div style="font-size:.85rem;">Submit one government-issued ID, one proof of address, and a selfie for a simple but reliable verification review.</div>
       </div>
     </div>`;
   }
@@ -1319,11 +1449,19 @@ function renderKYC(el) {
           ${status === 'unverified' || status === 'rejected' ? `
             <div class="mt-4">
               <div class="form-group">
-                <label>Document Type</label>
+                <label>Government ID Type</label>
                 <select class="nb-input" id="kyc-doc-type">
-                  <option value="passport">Passport</option>
-                  <option value="id_card">National ID Card</option>
                   <option value="drivers_license">Driver's License</option>
+                  <option value="passport">Passport</option>
+                  <option value="national_id">National ID Card</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Proof of Address</label>
+                <select class="nb-input" id="kyc-proof-type">
+                  <option value="utility_bill">Utility Bill</option>
+                  <option value="bank_statement">Bank Statement</option>
+                  <option value="tax_letter">Tax Letter</option>
                 </select>
               </div>
               <div class="form-group">
@@ -1332,16 +1470,16 @@ function renderKYC(el) {
               </div>
               <div class="row g-3">
                 <div class="col-md-6 form-group">
-                  <label>Front of Document</label>
+                  <label>Government ID Upload</label>
                   <input class="nb-input" type="file" accept="image/*" id="kyc-front">
                 </div>
                 <div class="col-md-6 form-group">
-                  <label>Back of Document (if applicable)</label>
-                  <input class="nb-input" type="file" accept="image/*" id="kyc-back">
+                  <label>Proof of Address Upload</label>
+                  <input class="nb-input" type="file" accept="image/*" id="kyc-proof">
                 </div>
               </div>
               <div class="form-group mt-3">
-                <label>Selfie with Document</label>
+                <label>Selfie</label>
                 <input class="nb-input" type="file" accept="image/*" id="kyc-selfie">
               </div>
               <div class="mt-4 d-flex justify-content-end">
@@ -1361,26 +1499,28 @@ function renderKYC(el) {
 
 async function submitKYC() {
   const type = document.getElementById('kyc-doc-type').value;
+  const proofType = document.getElementById('kyc-proof-type').value;
   const num = document.getElementById('kyc-doc-num').value.trim();
   const front = document.getElementById('kyc-front').files[0];
-  const back = document.getElementById('kyc-back').files[0];
+  const proof = document.getElementById('kyc-proof').files[0];
   const selfie = document.getElementById('kyc-selfie').files[0];
 
   if (!num) return toast('Please enter document number', 'error');
-  if (!front || !selfie) return toast('Please upload front of document and selfie', 'error');
+  if (!front || !proof || !selfie) return toast('Please upload your ID, proof of address, and selfie', 'error');
 
   // Simulate file upload (store as dataUrl for demo)
   const frontUrl = await nbImageFileToAvatarDataUrl(front, 800);
-  const backUrl = back ? await nbImageFileToAvatarDataUrl(back, 800) : null;
+  const proofUrl = await nbImageFileToAvatarDataUrl(proof, 800);
   const selfieUrl = await nbImageFileToAvatarDataUrl(selfie, 800);
 
   DB.users.update(STATE.user.id, {
     kycStatus: 'pending',
     kycData: {
       type,
+      proofType,
       num,
       front: frontUrl,
-      back: backUrl,
+      proofOfAddress: proofUrl,
       selfie: selfieUrl,
       submittedAt: new Date().toISOString()
     }
@@ -1392,7 +1532,18 @@ async function submitKYC() {
 }
 
 function saveProfile() {
-  DB.users.update(STATE.user.id, { name:document.getElementById('p-name').value, email:document.getElementById('p-email').value, phone:document.getElementById('p-phone').value, dob:document.getElementById('p-dob').value, address:document.getElementById('p-addr').value });
+  DB.users.update(STATE.user.id, { 
+    name:document.getElementById('p-name').value, 
+    email:document.getElementById('p-email').value, 
+    phone:document.getElementById('p-phone').value, 
+    dob:document.getElementById('p-dob').value, 
+    ssn:document.getElementById('p-ssn').value,
+    address:document.getElementById('p-address').value,
+    city:document.getElementById('p-city').value,
+    state:document.getElementById('p-state').value,
+    zip:document.getElementById('p-zip').value,
+    country:document.getElementById('p-country').value
+  });
   STATE.user = DB.users.getById(STATE.user.id);
   updateTopbarUser();
   toast('Profile updated!', 'success');
