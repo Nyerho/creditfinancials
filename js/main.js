@@ -201,14 +201,16 @@ function downloadTransferReceipt(id) {
   const html = nbTransferReceiptHtml(txn);
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
+  const objectUrl = URL.createObjectURL(blob);
+  link.href = objectUrl;
   link.download = `transfer-receipt-${nbTransferReference(txn)}.html`;
+  link.style.display = 'none';
   document.body.appendChild(link);
   link.click();
   setTimeout(() => {
-    URL.revokeObjectURL(link.href);
+    URL.revokeObjectURL(objectUrl);
     link.remove();
-  }, 0);
+  }, 1000);
 }
 
 function showTransferReceiptModal(id) {
@@ -1072,9 +1074,9 @@ async function confirmTransfer() {
   window.__nbPendingTransfer = null;
   toast('Transfer successful!', 'success');
   closeModal();
+  downloadTransferReceipt(txnId);
   navigate('history');
-  setTimeout(() => showTransferReceiptModal(txnId), 120);
-  setTimeout(() => downloadTransferReceipt(txnId), 200);
+  showTransferReceiptModal(txnId);
 }
 function addPayeeModal() {
   showModal('Add Payee', `
@@ -1105,6 +1107,7 @@ function renderHistory(el) {
   const rows = txns.map(t=>{
     const isDebit = myAccIds.includes(t.fromId) && t.type!=='credit';
     const cleanDesc = sanitizeTxnDesc(t.desc);
+    const isTransfer = String(t.category || '').toLowerCase() === 'transfer' || String(t.type || '').toLowerCase() === 'transfer';
     return `<tr>
       <td><div class="d-flex align-items-center gap-3">
         <div style="width:42px;height:42px;border-radius:12px;background:${isDebit?'rgba(220, 38, 38, 0.1)':'rgba(5, 150, 105, 0.1)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -1115,7 +1118,10 @@ function renderHistory(el) {
       <td style="font-size:.85rem;color:var(--nb-muted);">${fmtDate(t.ts)}</td>
       <td><span class="${isDebit?'amount-neg':'amount-pos'}" style="font-weight:800;font-size:1rem;">${isDebit?'-':'+'}${fmt(t.amount)}</span></td>
       <td><span class="badge-status badge-${t.status}" style="text-transform:uppercase;font-size:0.65rem;">${t.status}</span></td>
-      <td><button class="btn-nb btn-nb-outline btn-nb-sm" onclick="viewTxn('${t.id}')" style="border-radius:8px;"><i class="bi bi-eye"></i></button></td>
+      <td style="white-space:nowrap;">
+        ${isTransfer ? `<button class="btn-nb btn-nb-outline btn-nb-sm" onclick="downloadTransferReceipt('${t.id}')" style="border-radius:8px;margin-right:.35rem;"><i class="bi bi-receipt"></i></button>` : ''}
+        <button class="btn-nb btn-nb-outline btn-nb-sm" onclick="viewTxn('${t.id}')" style="border-radius:8px;"><i class="bi bi-eye"></i></button>
+      </td>
     </tr>`;}).join('');
   el.innerHTML = `
     <div class="row g-4 mb-4">

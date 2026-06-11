@@ -331,7 +331,7 @@ function renderAuthForm(type='login') {
         <div class="col-6 form-group"><label>Last Name</label><input class="nb-input" id="r-lname" placeholder="Doe"></div>
       </div>
       <div class="form-group"><label>Email</label><input class="nb-input" id="r-email" type="email" placeholder="you@email.com"></div>
-      <div class="form-group"><label>SSN</label><input class="nb-input" id="r-ssn" placeholder="123-45-6789" inputmode="numeric"></div>
+      <div class="form-group"><label>SSN <span style="color:var(--nb-muted);font-weight:400;">(optional)</span></label><input class="nb-input" id="r-ssn" placeholder="123-45-6789" inputmode="numeric"></div>
       <div class="form-group"><label>Date of Birth</label><input class="nb-input" id="r-dob" type="date"></div>
       <div class="form-group"><label>Phone</label><input class="nb-input" id="r-phone" placeholder="+1-555-0100"></div>
       <div class="form-group"><label>Address</label><input class="nb-input" id="r-address" placeholder="Street address"></div>
@@ -538,7 +538,7 @@ function doRegister() {
   const country = document.getElementById('r-country').value.trim();
   const ssnDigits = ssnRaw.replace(/[^\d]/g, '');
   if (!fname||!lname||!email) return toast('Please fill all required fields', 'error');
-  if (ssnDigits.length !== 9) return toast('Please enter a valid SSN', 'error');
+  if (ssnDigits && ssnDigits.length !== 9) return toast('If provided, SSN must be 9 digits', 'error');
   if (!dob) return toast('Date of birth is required', 'error');
   if (!phone) return toast('Phone is required', 'error');
   if (!address || !city || !state || !zip || !country) return toast('Address details are required', 'error');
@@ -555,7 +555,7 @@ function doRegister() {
         } catch (_) {}
         const id = cred.user.uid;
         const accessCode = generateAccessCode();
-        const user = { id, name:`${fname} ${lname}`, email, role:'customer', status:'active', phone, dob, ssn:ssnDigits, address, city, state, zip, country, accessCode, joined:new Date().toISOString().slice(0,10), failedLogins:0 };
+        const user = { id, name:`${fname} ${lname}`, email, role:'customer', status:'active', phone, dob, ssn:ssnDigits || '', address, city, state, zip, country, accessCode, joined:new Date().toISOString().slice(0,10), failedLogins:0 };
         DB.users.create(user);
         DB.accounts.create({ id:'a'+uid(), userId:id, type:accType, balance:0, iban:Math.floor(1000000000 + Math.random() * 9000000000).toString(), swift:'NXBKGB21', status:'active', limit:5000, createdAt:new Date().toISOString().slice(0,10) });
         await window.NB_FIREBASE.upsert('users', id, user);
@@ -572,7 +572,7 @@ function doRegister() {
   }
   const id = 'u' + uid();
   const accessCode = generateAccessCode();
-  const user = { id, name:`${fname} ${lname}`, email, password:pass, role:'customer', status:'active', phone, dob, ssn:ssnDigits, address, city, state, zip, country, accessCode, joined:new Date().toISOString().slice(0,10), failedLogins:0 };
+  const user = { id, name:`${fname} ${lname}`, email, password:pass, role:'customer', status:'active', phone, dob, ssn:ssnDigits || '', address, city, state, zip, country, accessCode, joined:new Date().toISOString().slice(0,10), failedLogins:0 };
   DB.users.create(user);
   DB.accounts.create({ id:'a'+uid(), userId:id, type:accType, balance:0, iban:Math.floor(1000000000 + Math.random() * 9000000000).toString(), swift:'NXBKGB21', status:'active', limit:5000, createdAt:new Date().toISOString().slice(0,10) });
   const res = verifyCredentials(email, pass);
