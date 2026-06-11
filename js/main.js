@@ -119,6 +119,78 @@ function navigate(page) {
   if (window.innerWidth < 992) toggleSidebar(false);
 }
 
+function nbReconcileLoanDisbursements() {
+  if (!STATE.user) return;
+  if (window.__nb_reconcile_loans === true) return;
+  window.__nb_reconcile_loans = true;
+  try {
+    const userId = STATE.user.id;
+    const loans = DB.loans.getByUser(userId).filter(l => (l.status || '').toLowerCase() === 'active');
+    if (!loans.length) return;
+
+    const accounts = DB.accounts.getByUser(userId);
+    const activeAccount = accounts.find(a => a.status === 'active') || null;
+    if (!activeAccount) return;
+
+    const allTxns = DB.transactions.getAll();
+
+    loans.forEach(loan => {
+      const amount = Number(loan.amount || 0);
+      if (!Number.isFinite(amount) || amount <= 0) return;
+
+      const knownTxn =
+        (loan.disbursedTxId && allTxns.find(t => t.id === loan.disbursedTxId))
+        || allTxns.find(t => t.loanId === loan.id)
+        || allTxns.find(t =>
+          t.category === 'Loan'
+          && Number(t.amount) === amount
+          && (t.toId && accounts.some(a => a.id === t.toId))
+          && String(t.desc || '').toLowerCase().includes('disbursement')
+        );
+
+      if (knownTxn) {
+        if (!loan.disbursed || !loan.disbursedTxId || !loan.disbursedToAccountId) {
+          DB.loans.update(loan.id, {
+            disbursed: true,
+            disbursedTxId: knownTxn.id,
+            disbursedAt: loan.disbursedAt || knownTxn.ts || new Date().toISOString(),
+            disbursedToAccountId: loan.disbursedToAccountId || knownTxn.toId || activeAccount.id
+          });
+        }
+        return;
+      }
+
+      const targetId = loan.disbursedToAccountId && accounts.some(a => a.id === loan.disbursedToAccountId)
+        ? loan.disbursedToAccountId
+        : activeAccount.id;
+      const acc = DB.accounts.getById(targetId);
+      if (!acc) return;
+
+      const ts = loan.disbursedAt || new Date().toISOString();
+      const txnId = 't' + uid();
+      const desc = `${loan.type || 'Loan'} disbursement`;
+
+      DB.accounts.update(targetId, { balance: Number(acc.balance || 0) + amount });
+      DB.transactions.create({
+        id: txnId,
+        fromId: null,
+        toId: targetId,
+        amount,
+        type: 'credit',
+        category: 'Loan',
+        desc,
+        status: 'completed',
+        ts,
+        loanId: loan.id
+      });
+      DB.loans.update(loan.id, { disbursed: true, disbursedAt: ts, disbursedToAccountId: targetId, disbursedTxId: txnId });
+    });
+  } catch (_) {
+  } finally {
+    window.__nb_reconcile_loans = false;
+  }
+}
+
 function renderPage(page) {
   const el = document.getElementById('page-content');
   if (!el) return;
@@ -175,6 +247,7 @@ function bootApp() {
   
   updateTopbarUser();
   buildNav();
+  try { nbReconcileLoanDisbursements(); } catch (_) {}
   
   // Determine start page
   let startPage = 'dashboard';
@@ -190,6 +263,7 @@ function bootApp() {
   navigate(startPage);
 
   try { if (DB?.cloud?.watch) DB.cloud.watch(); } catch (_) {}
+  try { nbReconcileLoanDisbursements(); } catch (_) {}
   
   const saved = localStorage.getItem('nb_theme');
   if (saved === 'dark') { 
@@ -208,6 +282,7 @@ function bootApp() {
     if (t) clearTimeout(t);
     t = setTimeout(() => {
       if (!STATE.user) return;
+      try { nbReconcileLoanDisbursements(); } catch (_) {}
       try { updateTopbarUser(); } catch (_) {}
       try { updateNotifDot(); } catch (_) {}
       try { renderPage(STATE.page); } catch (_) {}

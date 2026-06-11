@@ -130,10 +130,6 @@ function renderAdminDashboard(el) {
 function approveLoan(id) {
   const loan = DB.loans.getById(id);
   if (!loan) return toast('Loan not found', 'error');
-  if (loan.status === 'active' && loan.disbursed) {
-    toast('Loan already approved and disbursed.', 'info');
-    return renderPage('admin-dashboard');
-  }
 
   const userId = loan.userId;
   if (!userId) return toast('Loan has no customer attached', 'error');
@@ -158,20 +154,48 @@ function approveLoan(id) {
   const amount = Number(loan.amount || 0);
   if (!Number.isFinite(amount) || amount <= 0) return toast('Invalid loan amount', 'error');
 
+  const toAccountId = dest.id;
+  const existingDisbursement =
+    (loan.disbursedTxId && DB.transactions.getAll().find(t => t.id === loan.disbursedTxId))
+    || DB.transactions.getAll().find(t => t.loanId === id)
+    || DB.transactions.getAll().find(t =>
+      t.category === 'Loan'
+      && t.toId === toAccountId
+      && Number(t.amount) === amount
+      && String(t.desc || '').toLowerCase().includes('disbursement')
+    );
+  if (existingDisbursement) {
+    DB.loans.update(id, {
+      status: 'active',
+      disbursed: true,
+      disbursedTxId: existingDisbursement.id,
+      disbursedAt: loan.disbursedAt || existingDisbursement.ts || new Date().toISOString(),
+      disbursedToAccountId: loan.disbursedToAccountId || existingDisbursement.toId || toAccountId,
+      nextPayment: loan.nextPayment || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
+    });
+    logAudit('APPROVE_LOAN', 'loan', id);
+    toast('Loan approved. Disbursement already exists.', 'success');
+    return renderPage('admin-dashboard');
+  }
+
+  const freshAcc = DB.accounts.getById(toAccountId);
+  if (!freshAcc) return toast('Destination account not found', 'error');
+
   const txnId = 't' + uid();
   const ts = new Date().toISOString();
   const desc = `${loan.type || 'Loan'} disbursement`;
-  DB.accounts.update(dest.id, { balance: Number(dest.balance || 0) + amount });
+  DB.accounts.update(toAccountId, { balance: Number(freshAcc.balance || 0) + amount });
   DB.transactions.create({
     id: txnId,
     fromId: null,
-    toId: dest.id,
+    toId: toAccountId,
     amount,
     type: 'credit',
     category: 'Loan',
     desc,
     status: 'completed',
-    ts
+    ts,
+    loanId: id
   });
   DB.notifications.add({ id: 'n' + uid(), userId, message: `Your loan of ${fmt(amount)} has been disbursed to your account.`, type: 'success', read: false, ts });
   sendTransactionAlert(userId, 'credit', amount, desc);
@@ -181,7 +205,8 @@ function approveLoan(id) {
     nextPayment: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
     disbursed: true,
     disbursedAt: ts,
-    disbursedToAccountId: dest.id
+    disbursedToAccountId: toAccountId,
+    disbursedTxId: txnId
   });
   logAudit('APPROVE_LOAN', 'loan', id);
   toast('Loan approved and disbursed!', 'success');
