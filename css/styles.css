@@ -183,7 +183,7 @@ body.sidebar-collapsed .main-content { margin-left: 0; }
 }
 .stat-card:hover { transform: translateY(-5px); border-color: var(--nb-accent); }
 .stat-label { font-size: 0.9rem; font-weight: 600; color: var(--nb-muted); text-transform: uppercase; letter-spacing: 1px; }
-.stat-card .stat-value { color: var(--nb-text); font-size: 2.5rem; font-weight: 800; font-family: 'Sora', sans-serif; letter-spacing: -1px; }
+.stat-card .stat-value { color: var(--nb-text); font-size: clamp(1.55rem, 4.2vw, 2.25rem); font-weight: 800; font-family: 'Sora', sans-serif; letter-spacing: -1px; }
 .stat-change { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
 .stat-change.up { color: var(--nb-success); }
 .stat-change.down { color: var(--nb-danger); }

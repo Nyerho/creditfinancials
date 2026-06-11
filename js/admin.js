@@ -127,7 +127,66 @@ function renderAdminDashboard(el) {
   },50);
 }
 
-function approveLoan(id) { DB.loans.update(id,{status:'active',nextPayment:new Date(Date.now()+30*86400000).toISOString().slice(0,10)}); logAudit('APPROVE_LOAN','loan',id); toast('Loan approved!','success'); renderPage('admin-dashboard'); }
+function approveLoan(id) {
+  const loan = DB.loans.getById(id);
+  if (!loan) return toast('Loan not found', 'error');
+  if (loan.status === 'active' && loan.disbursed) {
+    toast('Loan already approved and disbursed.', 'info');
+    return renderPage('admin-dashboard');
+  }
+
+  const userId = loan.userId;
+  if (!userId) return toast('Loan has no customer attached', 'error');
+
+  let dest = DB.accounts.getByUser(userId).find(a => a.status === 'active');
+  if (!dest) {
+    const accId = 'a' + uid();
+    dest = {
+      id: accId,
+      userId,
+      type: 'Checking',
+      balance: 0,
+      iban: Math.floor(1000000000 + Math.random() * 9000000000).toString(),
+      swift: 'NXBKGB21',
+      status: 'active',
+      limit: 5000,
+      createdAt: new Date().toISOString().slice(0, 10)
+    };
+    DB.accounts.create(dest);
+  }
+
+  const amount = Number(loan.amount || 0);
+  if (!Number.isFinite(amount) || amount <= 0) return toast('Invalid loan amount', 'error');
+
+  const txnId = 't' + uid();
+  const ts = new Date().toISOString();
+  const desc = `${loan.type || 'Loan'} disbursement`;
+  DB.accounts.update(dest.id, { balance: Number(dest.balance || 0) + amount });
+  DB.transactions.create({
+    id: txnId,
+    fromId: null,
+    toId: dest.id,
+    amount,
+    type: 'credit',
+    category: 'Loan',
+    desc,
+    status: 'completed',
+    ts
+  });
+  DB.notifications.add({ id: 'n' + uid(), userId, message: `Your loan of ${fmt(amount)} has been disbursed to your account.`, type: 'success', read: false, ts });
+  sendTransactionAlert(userId, 'credit', amount, desc);
+
+  DB.loans.update(id, {
+    status: 'active',
+    nextPayment: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+    disbursed: true,
+    disbursedAt: ts,
+    disbursedToAccountId: dest.id
+  });
+  logAudit('APPROVE_LOAN', 'loan', id);
+  toast('Loan approved and disbursed!', 'success');
+  renderPage('admin-dashboard');
+}
 function rejectLoan(id) { DB.loans.update(id,{status:'rejected'}); logAudit('REJECT_LOAN','loan',id); toast('Loan rejected','warning'); renderPage('admin-dashboard'); }
 
 function renderAdminUsers(el) {
