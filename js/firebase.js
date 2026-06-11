@@ -2,11 +2,13 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
 import {
   getAuth,
+  browserSessionPersistence,
   applyActionCode,
   createUserWithEmailAndPassword,
   reload,
   sendEmailVerification,
   sendPasswordResetEmail,
+  setPersistence,
   signInWithEmailAndPassword,
   signOut
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -42,6 +44,24 @@ const auth = getAuth(app);
 let secondaryApp = null;
 let secondaryAuth = null;
 
+try {
+  await setPersistence(auth, browserSessionPersistence);
+} catch (_) {}
+
+function getAuthActionUrl(path = 'app.html?view=login') {
+  const fallbackBase = `https://${firebaseConfig.authDomain}`;
+  const isHttp = typeof location !== 'undefined' && /^https?:$/i.test(location.protocol || '');
+  const base = isHttp && location.origin ? location.origin : fallbackBase;
+  return `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+}
+
+function getEmailActionSettings(path = 'app.html?view=login') {
+  return {
+    url: getAuthActionUrl(path),
+    handleCodeInApp: false
+  };
+}
+
 function getSecondaryAuth() {
   if (!secondaryApp) secondaryApp = initializeApp(firebaseConfig, 'nb-secondary');
   if (!secondaryAuth) secondaryAuth = getAuth(secondaryApp);
@@ -57,11 +77,11 @@ async function signUp(email, password) {
 }
 
 async function sendVerifyEmail(user) {
-  return sendEmailVerification(user);
+  return sendEmailVerification(user, getEmailActionSettings('app.html?view=login'));
 }
 
 async function sendPasswordReset(email) {
-  return sendPasswordResetEmail(auth, email);
+  return sendPasswordResetEmail(auth, email, getEmailActionSettings('app.html?view=login'));
 }
 
 async function adminCreateAuthUser(email, password) {
@@ -92,7 +112,8 @@ async function queueEmail(to, subject, text, html) {
     message: {
       subject: subject || '',
       text: text || '',
-      html: html || ''
+      html: html || '',
+      replyTo: 'support@creditfinancials.xyz'
     }
   };
   await addDoc(collection(db, 'mail'), payload);

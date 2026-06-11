@@ -192,6 +192,29 @@
       transform: translateY(-3px);
       box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
     }
+    .btn-outline-white {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff !important;
+      padding: 18px 45px;
+      border-radius: 100px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.4s;
+      border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(10px);
+    }
+    .btn-outline-white:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+    .btn-outline-white:active {
+      transform: translateY(-1px);
+    }
 
     /* Cards Section */
     .card-product {
@@ -842,7 +865,7 @@
         <div class="nav-item-wrapper">
           <a href="#contact" class="nav-link-custom" onclick="toggleMobileNav(false)">Contact Us</a>
         </div>
-        <a href="app.html?view=login" class="btn-outline-white py-2 px-4" style="font-size: 13px;" id="header-login-cta" onclick="toggleMobileNav(false)">Login</a>
+        <a href="app.html?view=login" class="btn-outline-white py-2 px-4" style="font-size: 13px; padding: 12px 18px;" id="header-login-cta" onclick="toggleMobileNav(false)">Login</a>
         <a href="app.html" class="btn-premium py-2 px-4" style="font-size: 13px;" id="header-portal-cta" onclick="toggleMobileNav(false)">Online Portal</a>
       </nav>
       <div class="header-actions">
