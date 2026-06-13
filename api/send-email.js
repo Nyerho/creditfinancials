@@ -8,25 +8,57 @@ function sanitizeText(value, max = 4000) {
   return String(value || '').trim().slice(0, max);
 }
 
+function normalizeOrigin(origin) {
+  try {
+    const url = new URL(String(origin || '').trim());
+    const protocol = url.protocol.toLowerCase();
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    const port = url.port ? `:${url.port}` : '';
+    return `${protocol}//${host}${port}`;
+  } catch (_) {
+    return '';
+  }
+}
+
+function getAllowedOrigins() {
+  return String(process.env.ALLOWED_ORIGIN || '')
+    .split(',')
+    .map(v => normalizeOrigin(v))
+    .filter(Boolean);
+}
+
+function getRequestOrigin(req) {
+  const headerOrigin = normalizeOrigin(req.headers.origin || '');
+  if (headerOrigin) return headerOrigin;
+  const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+  if (!host) return '';
+  return normalizeOrigin(`${proto}://${host}`);
+}
+
 function allowOrigin(req) {
-  const allowed = process.env.ALLOWED_ORIGIN || '';
-  const origin = req.headers.origin || '';
-  if (!allowed || !origin) return true;
-  return origin.replace(/\/$/, '') === allowed.replace(/\/$/, '');
+  const allowedOrigins = getAllowedOrigins();
+  const requestOrigin = getRequestOrigin(req);
+  if (!allowedOrigins.length || !requestOrigin) return true;
+  return allowedOrigins.includes(requestOrigin);
 }
 
 module.exports = async (req, res) => {
+  const requestOrigin = getRequestOrigin(req);
+  const allowedOrigins = getAllowedOrigins();
+  const corsOrigin = allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : (allowedOrigins[0] || '*');
+
   if (req.method === 'OPTIONS') {
     res.statusCode = 204;
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     return res.end();
   }
 
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Origin', corsOrigin);
 
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'Method not allowed' });
   if (!allowOrigin(req)) return json(res, 403, { ok: false, error: 'Origin not allowed' });
