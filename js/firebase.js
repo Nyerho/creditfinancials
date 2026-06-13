@@ -109,6 +109,31 @@ async function signOutUser() {
 async function queueEmail(to, subject, text, html) {
   const payload = {
     to,
+    subject: subject || '',
+    text: text || '',
+    html: html || '',
+    replyTo: 'support@creditfinancials.xyz'
+  };
+
+  const canUseApi = typeof fetch === 'function' && typeof location !== 'undefined' && /^https?:$/i.test(location.protocol || '');
+  if (canUseApi) {
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      });
+      if (res.ok) return true;
+      const details = await res.text().catch(() => '');
+      console.warn('Email API rejected request, falling back to Firestore queue.', details);
+    } catch (err) {
+      console.warn('Email API unavailable, falling back to Firestore queue.', err);
+    }
+  }
+
+  const fallbackPayload = {
+    to,
     message: {
       subject: subject || '',
       text: text || '',
@@ -116,7 +141,7 @@ async function queueEmail(to, subject, text, html) {
       replyTo: 'support@creditfinancials.xyz'
     }
   };
-  await addDoc(collection(db, 'mail'), payload);
+  await addDoc(collection(db, 'mail'), fallbackPayload);
 }
 
 async function saveLoginOtp(userId, email, hash, expiresAt) {

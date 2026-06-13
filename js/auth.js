@@ -293,6 +293,34 @@ async function sendTransactionAlert(userId, type, amount, desc) {
   }
 }
 
+async function sendLoginWelcomeEmail(user) {
+  if (!user?.email || !window.NB_FIREBASE?.queueEmail) return;
+  const name = user.name || 'Customer';
+  const time = new Date().toLocaleString();
+  const balance = DB.accounts.getByUser(user.id).reduce((s, a) => s + Number(a.balance || 0), 0);
+  const subject = `Welcome back to CreditFinancials, ${name}`;
+  const text = `Hello ${name},\n\nA new login to your CreditFinancials profile was recorded on ${time}.\nCurrent total balance: ${fmt(balance)}.\n\nIf this was not you, please change your password and contact support@creditfinancials.xyz immediately.`;
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;border:1px solid #e5e9f0;border-radius:12px;padding:24px;background:#ffffff;">
+      <h2 style="color:#0f172a;margin-top:0;font-size:22px;">Welcome back, ${name}</h2>
+      <p style="font-size:15px;color:#1a1f36;">A new sign-in to your CreditFinancials account was recorded.</p>
+      <div style="background:#f3f6fb;padding:16px;border-radius:8px;margin:20px 0;">
+        <table style="width:100%;font-size:14px;border-collapse:collapse;">
+          <tr><td style="padding:4px 0;color:#6b7280;">Login Time</td><td style="padding:4px 0;text-align:right;font-weight:700;color:#1a1f36;">${time}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;">Total Balance</td><td style="padding:4px 0;text-align:right;font-weight:700;color:#1a1f36;">${fmt(balance)}</td></tr>
+        </table>
+      </div>
+      <p style="font-size:14px;color:#1a1f36;">If this was not you, reset your password immediately and contact <strong>support@creditfinancials.xyz</strong>.</p>
+    </div>
+  `;
+
+  try {
+    await window.NB_FIREBASE.queueEmail(user.email, subject, text, html);
+  } catch (e) {
+    console.error('Failed to send login welcome email:', e);
+  }
+}
+
 function getPendingLoginOtp() {
   try { return JSON.parse(sessionStorage.getItem('nb_login_otp') || 'null'); } catch { return null; }
 }
@@ -464,19 +492,23 @@ async function doLoginStart() {
       try { await DB.cloud.syncDown(); } catch (_) {}
       const sessionUser = STATE.user;
       if (isStaff || ['admin','superadmin','teller'].includes(sessionUser?.role)) {
+        void sendLoginWelcomeEmail(sessionUser);
         return window.location.href = 'admin.html';
       }
       toast('Signed in successfully.', 'success');
+      void sendLoginWelcomeEmail(sessionUser);
       return bootApp();
     }
     const result = verifyCredentials(email, pass);
     if (!result.ok) return toast(result.msg, 'error');
     if (['admin','superadmin','teller'].includes(result.user.role)) {
       finalizeLogin(result.user);
+      void sendLoginWelcomeEmail(result.user);
       return window.location.href = 'admin.html';
     }
     finalizeLogin(result.user);
     toast('Signed in successfully.', 'success');
+    void sendLoginWelcomeEmail(result.user);
     bootApp();
   } catch (e) {
     const code = e?.code ? ` (${e.code})` : '';
