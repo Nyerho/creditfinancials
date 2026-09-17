@@ -98,10 +98,19 @@ async function nbCloudSyncDown() {
   }
 }
 
+const nbMemory = Object.create(null);
+
 const DB = {
-  get(key) { try { return JSON.parse(localStorage.getItem('nb_' + key)) || null; } catch { return null; } },
+  get(key) {
+    if (Object.prototype.hasOwnProperty.call(nbMemory, key)) return nbMemory[key];
+    try { return JSON.parse(localStorage.getItem('nb_' + key)) || null; } catch { return null; }
+  },
   set(key, val) {
-    localStorage.setItem('nb_' + key, JSON.stringify(val));
+    // Keep the current cloud snapshot in memory first. iOS Safari and iOS
+    // Chrome have tighter localStorage quotas; user records can include KYC
+    // images and exceed that quota even when Firestore reads succeed.
+    nbMemory[key] = val;
+    try { localStorage.setItem('nb_' + key, JSON.stringify(val)); } catch (_) {}
     try { window.dispatchEvent(new CustomEvent('nb_data_changed', { detail: { key } })); } catch (_) {}
   },
   
