@@ -20,6 +20,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getDocsFromServer,
   onSnapshot,
   getFirestore,
   query,
@@ -191,7 +192,7 @@ async function remove(collectionName, id) {
 }
 
 async function list(collectionName) {
-  const snap = await getDocs(collection(db, collectionName));
+  const snap = await getDocsFromServer(collection(db, collectionName));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 

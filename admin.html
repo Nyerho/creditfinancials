@@ -152,6 +152,10 @@
         location.href = 'app.html';
       } else {
         try { if (DB?.cloud?.watch) await DB.cloud.watch(); } catch (_) {}
+        // onSnapshot may deliver a browser-cache snapshot first. Re-read from
+        // the Firestore server after listeners are attached so a new device
+        // cannot remain stuck with only its locally cached admin record.
+        try { if (DB?.cloud?.syncDown) await DB.cloud.syncDown(); } catch (_) {}
         const u = STATE.user;
         document.getElementById('sidebar-name').textContent = u.name;
         document.getElementById('sidebar-role').textContent = u.role.toUpperCase();
