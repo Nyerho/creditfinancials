@@ -54,14 +54,14 @@ async function nbCloudSyncDown() {
         window.NB_FIREBASE.list('payees'),
         window.NB_FIREBASE.list('auditLog')
       ]);
-      if (Array.isArray(users) && users.length) DB.set('users', users);
-      if (Array.isArray(accounts) && accounts.length) DB.set('accounts', accounts);
-      if (Array.isArray(transactions) && transactions.length) DB.set('transactions', transactions);
-      if (Array.isArray(cards) && cards.length) DB.set('cards', cards);
-      if (Array.isArray(loans) && loans.length) DB.set('loans', loans);
-      if (Array.isArray(notifications) && notifications.length) DB.set('notifications', notifications);
-      if (Array.isArray(payees) && payees.length) DB.set('payees', payees);
-      if (Array.isArray(auditLog) && auditLog.length) DB.set('auditLog', auditLog);
+      if (Array.isArray(users)) DB.set('users', users);
+      if (Array.isArray(accounts)) DB.set('accounts', accounts);
+      if (Array.isArray(transactions)) DB.set('transactions', transactions);
+      if (Array.isArray(cards)) DB.set('cards', cards);
+      if (Array.isArray(loans)) DB.set('loans', loans);
+      if (Array.isArray(notifications)) DB.set('notifications', notifications);
+      if (Array.isArray(payees)) DB.set('payees', payees);
+      if (Array.isArray(auditLog)) DB.set('auditLog', auditLog);
       return true;
     }
     if (!window.NB_FIREBASE?.getById || !window.NB_FIREBASE?.listWhere) return false;

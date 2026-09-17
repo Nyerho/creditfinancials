@@ -2,6 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
 import {
   getAuth,
+  authStateReady,
   browserSessionPersistence,
   applyActionCode,
   createUserWithEmailAndPassword,
@@ -38,15 +39,25 @@ const firebaseConfig = {
 }; 
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Analytics is optional. Some mobile, privacy-focused, and embedded browsers
+// do not support the APIs it needs; it must never prevent Auth/Firestore from
+// loading for those browsers.
+let analytics = null;
+try { analytics = getAnalytics(app); } catch (_) {}
 const db = getFirestore(app);
 const auth = getAuth(app);
 let secondaryApp = null;
 let secondaryAuth = null;
 
-try {
-  await setPersistence(auth, browserSessionPersistence);
-} catch (_) {}
+const firebaseReady = (async () => {
+  try {
+    await setPersistence(auth, browserSessionPersistence);
+  } catch (_) {}
+  try {
+    await authStateReady(auth);
+  } catch (_) {}
+  return auth;
+})();
 
 function getAuthActionUrl(path = 'app.html?view=login') {
   const fallbackBase = `https://${firebaseConfig.authDomain}`;
@@ -236,5 +247,6 @@ window.NB_FIREBASE = {
   subscribeWhere,
   subscribeDoc
 };
+window.NB_FIREBASE_READY = firebaseReady.then(() => window.NB_FIREBASE);
 
 export { app, auth, db, signIn, signUp, sendVerifyEmail, sendPasswordReset, adminCreateAuthUser, reloadCurrentUser, applyEmailVerificationCode, signOutUser, queueEmail, saveLoginOtp, getLoginOtp, deleteLoginOtp, upsert, remove, list, listWhere, getById, existsDoc, findOneByField, subscribeAll, subscribeWhere, subscribeDoc };

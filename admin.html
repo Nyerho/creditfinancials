@@ -107,15 +107,22 @@
   <script>
     // Boot Admin
     document.addEventListener('DOMContentLoaded', async () => {
+      // Firebase is a module and may finish after DOMContentLoaded on slower
+      // phones/browsers. Wait for auth restoration before reading local/cloud data.
+      try {
+        if (window.NB_FIREBASE_READY) await window.NB_FIREBASE_READY;
+      } catch (_) {}
+
       // Check theme
       const savedTheme = localStorage.getItem('nb_theme') || 'light';
       document.documentElement.dataset.theme = savedTheme;
       const themeBtn = document.getElementById('theme-btn');
       if(themeBtn) themeBtn.innerHTML = savedTheme==='dark' ? '<i class="bi bi-moon"></i>' : '<i class="bi bi-sun"></i>';
 
-      // Check Session
+      // Check Session and refresh from Firestore on every admin load. The
+      // localStorage copy is only a cache and may be empty on a new device.
       let hasAdminSession = restoreSession() && isAdmin();
-      if (!hasAdminSession && window.NB_FIREBASE?.auth?.currentUser && DB?.cloud?.syncDown) {
+      if (window.NB_FIREBASE?.auth?.currentUser && DB?.cloud?.syncDown) {
         try {
           await DB.cloud.syncDown();
           const uid = window.NB_FIREBASE.auth.currentUser.uid;
