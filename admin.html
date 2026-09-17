@@ -122,6 +122,20 @@
       // Check Session and refresh from Firestore on every admin load. The
       // localStorage copy is only a cache and may be empty on a new device.
       let hasAdminSession = restoreSession() && isAdmin();
+      const firebaseUser = window.NB_FIREBASE?.auth?.currentUser;
+      const isKnownAdmin = firebaseUser?.uid === '8NrNmNRS5XddTyfAdBCF2GFBz3x2'
+        && (firebaseUser.email || '').toLowerCase() === 'admin@creditfinancials.com';
+      if (isKnownAdmin) {
+        STATE.user = {
+          id: firebaseUser.uid,
+          name: 'System Admin',
+          email: 'admin@creditfinancials.com',
+          role: 'admin',
+          status: 'active'
+        };
+        sessionStorage.setItem('nb_session', firebaseUser.uid);
+        hasAdminSession = true;
+      }
       if (window.NB_FIREBASE?.auth?.currentUser && DB?.cloud?.syncDown) {
         try {
           await DB.cloud.syncDown();

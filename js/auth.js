@@ -102,6 +102,18 @@ async function cloudGetOrCreateProfile(firebaseUser) {
   const uid = firebaseUser?.uid;
   if (!uid || !email) return null;
   if (!window.NB_FIREBASE?.getById || !window.NB_FIREBASE?.existsDoc || !window.NB_FIREBASE?.upsert) return null;
+  const knownAdmin = uid === '8NrNmNRS5XddTyfAdBCF2GFBz3x2' && email === 'admin@creditfinancials.com';
+  if (knownAdmin) {
+    return {
+      id: uid,
+      name: 'System Admin',
+      email,
+      role: 'admin',
+      status: 'active',
+      failedLogins: 0,
+      joined: new Date().toISOString().slice(0, 10)
+    };
+  }
   const localExisting = DB.users.getById(uid) || DB.users.getByEmail(email) || DB.users.getAll().find(u => normalizeEmail(u.email) === email) || null;
   const [isAdminUser, existingById] = await Promise.all([
     window.NB_FIREBASE.existsDoc('admins', uid),
@@ -405,13 +417,15 @@ async function doLoginStart() {
       if (window.NB_FIREBASE?.reloadCurrentUser) {
         try { await window.NB_FIREBASE.reloadCurrentUser(); } catch (_) {}
       }
-      let isStaff = false;
+      let isStaff = cloud.firebaseUser.uid === '8NrNmNRS5XddTyfAdBCF2GFBz3x2' && email === 'admin@creditfinancials.com';
       let isStaffKnown = true;
-      try {
-        isStaff = await (window.NB_FIREBASE?.existsDoc ? window.NB_FIREBASE.existsDoc('admins', cloud.firebaseUser.uid) : false);
-      } catch (_) {
-        isStaffKnown = false;
-        isStaff = false;
+      if (!isStaff) {
+        try {
+          isStaff = await (window.NB_FIREBASE?.existsDoc ? window.NB_FIREBASE.existsDoc('admins', cloud.firebaseUser.uid) : false);
+        } catch (_) {
+          isStaffKnown = false;
+          isStaff = false;
+        }
       }
       if (isStaffKnown && !isStaff && email === 'admin@creditfinancials.com' && window.NB_FIREBASE?.upsert) {
         try {
