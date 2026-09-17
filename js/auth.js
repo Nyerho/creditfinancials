@@ -499,9 +499,16 @@ async function doLoginStart() {
         finalizeLogin(fallback);
         toast('Signed in, but profile access is blocked by Firestore rules. Using local profile.', 'warning');
       } else {
-        if (DB.users.getById(profile.id)) DB.users.update(profile.id, profile);
-        else DB.users.create(profile);
-        finalizeLogin(profile);
+        // The administrator is identified by Firebase Auth and does not need
+        // a profile in the customer users collection. Do not recreate a
+        // synthetic System Admin document on every new device.
+        if (isStaff && profile.id === '8NrNmNRS5XddTyfAdBCF2GFBz3x2') {
+          finalizeLogin({ ...profile, role: 'admin', name: 'System Admin' });
+        } else {
+          if (DB.users.getById(profile.id)) DB.users.update(profile.id, profile);
+          else DB.users.create(profile);
+          finalizeLogin(profile);
+        }
       }
       try { await DB.cloud.syncDown(); } catch (_) {}
       const sessionUser = STATE.user;
