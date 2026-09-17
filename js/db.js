@@ -42,27 +42,28 @@ async function nbCloudSyncDown() {
   if (!nbCloudEnabled() || !window.NB_FIREBASE?.auth?.currentUser) return false;
   try {
     const uid = window.NB_FIREBASE.auth.currentUser.uid;
-    const isAdmin = await (window.NB_FIREBASE.existsDoc ? window.NB_FIREBASE.existsDoc('admins', uid) : false);
+    let isAdmin = false;
+    try {
+      isAdmin = await (window.NB_FIREBASE.existsDoc ? window.NB_FIREBASE.existsDoc('admins', uid) : false);
+    } catch (_) {}
+    // Keep admin access working when the marker document is temporarily
+    // unavailable on a fresh device, but the signed-in profile is already
+    // known to be an administrator.
+    if (!isAdmin) {
+      const localProfile = DB.users?.getById?.(uid);
+      isAdmin = ['admin', 'superadmin', 'teller'].includes(localProfile?.role);
+    }
     if (isAdmin && window.NB_FIREBASE?.list) {
-      const [users, accounts, transactions, cards, loans, notifications, payees, auditLog] = await Promise.all([
-        window.NB_FIREBASE.list('users'),
-        window.NB_FIREBASE.list('accounts'),
-        window.NB_FIREBASE.list('transactions'),
-        window.NB_FIREBASE.list('cards'),
-        window.NB_FIREBASE.list('loans'),
-        window.NB_FIREBASE.list('notifications'),
-        window.NB_FIREBASE.list('payees'),
-        window.NB_FIREBASE.list('auditLog')
-      ]);
-      if (Array.isArray(users)) DB.set('users', users);
-      if (Array.isArray(accounts)) DB.set('accounts', accounts);
-      if (Array.isArray(transactions)) DB.set('transactions', transactions);
-      if (Array.isArray(cards)) DB.set('cards', cards);
-      if (Array.isArray(loans)) DB.set('loans', loans);
-      if (Array.isArray(notifications)) DB.set('notifications', notifications);
-      if (Array.isArray(payees)) DB.set('payees', payees);
-      if (Array.isArray(auditLog)) DB.set('auditLog', auditLog);
-      return true;
+      const collections = ['users', 'accounts', 'transactions', 'cards', 'loans', 'notifications', 'payees', 'auditLog'];
+      const results = await Promise.allSettled(collections.map(name => window.NB_FIREBASE.list(name)));
+      let syncedAny = false;
+      results.forEach((result, index) => {
+        if (result.status !== 'fulfilled' || !Array.isArray(result.value)) return;
+        DB.set(collections[index], result.value);
+        syncedAny = true;
+      });
+      if (syncedAny) return true;
+      throw new Error('No admin Firestore collections could be read');
     }
     if (!window.NB_FIREBASE?.getById || !window.NB_FIREBASE?.listWhere) return false;
     const [me, accounts, transactions, cards, loans, notifications, payees] = await Promise.all([
@@ -214,7 +215,11 @@ async function nbCloudWatch() {
     const unsubs = window.__nb_cloud_unsubs;
 
     let isAdmin = false;
-    try { isAdmin = await (window.NB_FIREBASE?.existsDoc ? window.NB_FIREBASE.existsDoc('admins', u.uid) : false); } catch (_) { isAdmin = false; }
+    try { isAdmin = await (window.NB_FIREBASE?.existsDoc ? window.NB_FIREBASE.existsDoc('admins', u.uid) : false); } catch (_) {}
+    if (!isAdmin) {
+      const localProfile = DB.users?.getById?.(u.uid);
+      isAdmin = ['admin', 'superadmin', 'teller'].includes(localProfile?.role);
+    }
 
     const setKey = (key, val) => DB.set(key, Array.isArray(val) ? val : val ? [val] : []);
 
