@@ -2,7 +2,6 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
 import {
   getAuth,
-  authStateReady,
   browserSessionPersistence,
   applyActionCode,
   createUserWithEmailAndPassword,
@@ -10,6 +9,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   setPersistence,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -54,7 +54,20 @@ const firebaseReady = (async () => {
     await setPersistence(auth, browserSessionPersistence);
   } catch (_) {}
   try {
-    await authStateReady(auth);
+    await new Promise(resolve => {
+      let settled = false;
+      const unsubscribe = onAuthStateChanged(auth, () => {
+        if (settled) return;
+        settled = true;
+        unsubscribe();
+        resolve();
+      }, () => {
+        if (settled) return;
+        settled = true;
+        unsubscribe();
+        resolve();
+      });
+    });
   } catch (_) {}
   return auth;
 })();
