@@ -6,6 +6,8 @@ function nbCloudEnabled() {
   return !!window.NB_FIREBASE?.db && !!window.NB_FIREBASE?.upsert;
 }
 
+const NB_ADMIN_UID = '8NrNmNRS5XddTyfAdBCF2GFBz3x2';
+
 function nbCloudUpsert(collectionName, id, data) {
   if (!nbCloudEnabled()) return;
   const warn = () => {
@@ -46,6 +48,7 @@ async function nbCloudSyncDown() {
     try {
       isAdmin = await (window.NB_FIREBASE.existsDoc ? window.NB_FIREBASE.existsDoc('admins', uid) : false);
     } catch (_) {}
+    if (uid === NB_ADMIN_UID) isAdmin = true;
     // Keep admin access working when the marker document is temporarily
     // unavailable on a fresh device, but the signed-in profile is already
     // known to be an administrator.
@@ -214,8 +217,8 @@ async function nbCloudWatch() {
     window.__nb_cloud_unsubs = [];
     const unsubs = window.__nb_cloud_unsubs;
 
-    let isAdmin = false;
-    try { isAdmin = await (window.NB_FIREBASE?.existsDoc ? window.NB_FIREBASE.existsDoc('admins', u.uid) : false); } catch (_) {}
+    let isAdmin = u.uid === NB_ADMIN_UID;
+    try { if (!isAdmin) isAdmin = await (window.NB_FIREBASE?.existsDoc ? window.NB_FIREBASE.existsDoc('admins', u.uid) : false); } catch (_) {}
     if (!isAdmin) {
       const localProfile = DB.users?.getById?.(u.uid);
       isAdmin = ['admin', 'superadmin', 'teller'].includes(localProfile?.role);

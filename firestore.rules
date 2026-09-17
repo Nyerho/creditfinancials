@@ -8,8 +8,7 @@ service cloud.firestore {
 
     function isBootstrapAdmin() {
       return signedIn()
-        && request.auth.token.email == 'admin@creditfinancials.com'
-        && request.auth.token.email_verified == true;
+        && request.auth.token.email == 'admin@creditfinancials.com';
     }
 
     function isAdmin() {
