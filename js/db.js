@@ -229,7 +229,10 @@ async function nbCloudWatch() {
     const setKey = (key, val) => DB.set(key, Array.isArray(val) ? val : val ? [val] : []);
 
     if (isAdmin) {
-      unsubs.push(window.NB_FIREBASE.subscribeAll('users', v => DB.set('users', v || [])));
+      // Keep users server-authoritative. iOS Safari and iOS Chrome share
+      // WebKit's offline snapshot behavior; their users onSnapshot callback
+      // can replay a one-record local cache after the fresh server read.
+      // syncDown() loads users with getDocsFromServer() on each admin load.
       unsubs.push(window.NB_FIREBASE.subscribeAll('accounts', v => DB.set('accounts', v || [])));
       unsubs.push(window.NB_FIREBASE.subscribeAll('transactions', v => DB.set('transactions', v || [])));
       unsubs.push(window.NB_FIREBASE.subscribeAll('cards', v => DB.set('cards', v || [])));
