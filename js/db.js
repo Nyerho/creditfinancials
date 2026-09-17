@@ -107,7 +107,9 @@ const DB = {
   
   // Seed function removed to avoid placeholder data
   seed() {
-    if (nbCloudEnabled()) return;
+    // Never create the local demo admin on a hosted page. Doing so makes one
+    // browser appear to use a different account/database than other devices.
+    if (location.protocol !== 'file:') return;
     // Ensure at least one admin exists for system access
     const adminEmail = 'admin@creditfinancials.com';
     const existingAdmin =

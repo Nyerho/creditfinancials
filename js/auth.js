@@ -93,6 +93,9 @@ async function cloudSignInOrBootstrap(email, password) {
     const code = e?.code || '';
     if (code === 'auth/user-not-found') return { ok: false, msg: 'User not found. Please register or ask admin to create your account.' };
     if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') return { ok: false, msg: 'Invalid password' };
+    if (code === 'auth/network-request-failed') return { ok: false, msg: 'Firebase Auth network error. Check the connection and try again.' };
+    if (code === 'auth/operation-not-allowed') return { ok: false, msg: 'Firebase Email/Password sign-in is disabled for this project.' };
+    if (code === 'auth/api-key-not-valid') return { ok: false, msg: 'Firebase configuration is invalid for this deployment.' };
     return { ok: false, msg: 'Unable to sign in' };
   }
 }
@@ -519,6 +522,9 @@ async function doLoginStart() {
       toast('Signed in successfully.', 'success');
       void sendLoginWelcomeEmail(sessionUser);
       return bootApp();
+    }
+    if (location.protocol !== 'file:') {
+      return toast('Cloud authentication is unavailable. Refresh the page and try again.', 'error');
     }
     const result = verifyCredentials(email, pass);
     if (!result.ok) return toast(result.msg, 'error');
